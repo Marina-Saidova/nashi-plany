@@ -479,7 +479,7 @@
         }
 
         var cat = 'other';
-       var catMap = {
+var catMap = {
   'Экскурсии': 'excursions', 'excursions': 'excursions',
   'Покушоц!': 'food', 'Покушать': 'food', 'food': 'food',
   'Выставки': 'exhibitions', 'exhibitions': 'exhibitions',
@@ -565,7 +565,7 @@
       document.head.appendChild(script);
     }
 
- function saveToServer(ev) {
+function saveToServer(ev) {
   if (!isGasReady()) return;
   
   const catNameMap = {
@@ -607,7 +607,6 @@
   
   document.head.appendChild(script);
 }
-
 function deleteFromServer(id) {
   if (!isGasReady()) return;
   
