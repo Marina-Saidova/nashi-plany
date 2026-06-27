@@ -280,7 +280,7 @@
 <body>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish-3</h1>
+      <h1>📅 Hamster&Fish-4</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">🔄</button>
         <button class="btn-add" onclick="openModal()">+ Добавить</button>
@@ -424,11 +424,14 @@
   var id = String(e['ID'] || '');
   var title = e['Название'] || '';
   var dateStr = '';
-  if (e['Дата']) {
-    var dateStrRaw = String(e['Дата']);
-    if (dateStrRaw.length >= 10) {
-      dateStr = dateStrRaw.substring(0, 10);
-    }
+if (e['Дата']) {
+  var d = new Date(e['Дата']);
+  var offset = d.getTimezoneOffset() * 60000; // в миллисекундах
+  var localDate = new Date(d.getTime() + offset);
+  dateStr = localDate.getFullYear() + '-' + 
+            String(localDate.getMonth()+1).padStart(2,'0') + '-' + 
+            String(localDate.getDate()).padStart(2,'0');
+}
   }
   
   var existingIndex = events.findIndex(function(ev) {
