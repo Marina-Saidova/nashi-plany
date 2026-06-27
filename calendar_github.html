@@ -476,15 +476,14 @@
         }
 
         var cat = 'other';
-        var catMap = {
-          'Экскурсии': 'excursions',
-          'Покушоц!': 'food',
-          'Покушать': 'food',
-          'Выставки': 'exhibitions',
-          'Концерты': 'concerts',
-          'Кино': 'movies',
-          'Другое': 'other'
-        };
+       var catMap = {
+  'Экскурсии': 'excursions', 'excursions': 'excursions',
+  'Покушоц!': 'food', 'Покушать': 'food', 'food': 'food',
+  'Выставки': 'exhibitions', 'exhibitions': 'exhibitions',
+  'Концерты': 'concerts', 'concerts': 'concerts',
+  'Кино': 'movies', 'movies': 'movies',
+  'Другое': 'other', 'other': 'other'
+};
         if (e['Категория'] && catMap[e['Категория']]) {
           cat = catMap[e['Категория']];
         }
@@ -563,14 +562,23 @@
       document.head.appendChild(script);
     }
 
-   function saveToServer(ev) {
+ function saveToServer(ev) {
   if (!isGasReady()) return;
+  
+  const catNameMap = {
+    excursions: 'Экскурсии',
+    food: 'Покушоц!',
+    exhibitions: 'Выставки',
+    concerts: 'Концерты',
+    movies: 'Кино',
+    other: 'Другое'
+  };
   
   const callbackName = 'save_cb_' + Date.now();
   window[callbackName] = function(data) {
     delete window[callbackName];
     if (script && script.parentNode) document.head.removeChild(script);
-    console.log('Saved to server:', data);
+    console.log('Saved:', data);
   };
   
   const script = document.createElement('script');
@@ -582,7 +590,7 @@
     date: ev.date || '',
     time: ev.time || '',
     timeEnd: ev.timeEnd || '',
-    category: ev.category,
+    category: catNameMap[ev.category] || ev.category,
     place: ev.place || '',
     desc: ev.desc || ''
   });
