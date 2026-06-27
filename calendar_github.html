@@ -280,7 +280,7 @@
 <body>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish-4</h1>
+      <h1>📅 Hamster&Fish, v.2255</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">🔄</button>
         <button class="btn-add" onclick="openModal()">+ Добавить</button>
@@ -402,13 +402,7 @@
     let currentFilter = 'all';
     let editingId = null;
 
-    let events = [
-      { id: 1, title: 'Моя Мишель', date: '2026-06-27', time: '19:00', category: 'concerts', desc: 'Концерт в клубе' },
-      { id: 2, title: 'Выставка импрессионистов', date: '2026-06-28', category: 'exhibitions', desc: 'Главный музей' },
-      { id: 3, title: 'Пикник в парке', date: '', category: 'food', desc: 'Взять еду и вино' },
-      { id: 4, title: 'Кинотеатр «Космос»', date: '2026-06-30', time: '20:30', category: 'movies', desc: 'Новый фильм' },
-      { id: 5, title: 'Экскурсия по кремлю', date: '2026-07-05', category: 'excursions', desc: 'Сбор в 10:00' }
-    ];
+    let events = [];
 
     function isGasReady() {
       return GAS_URL && !GAS_URL.includes('ВСТАВЬТЕ');
