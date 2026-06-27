@@ -20,8 +20,8 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-text-size-adjust: 100%; }
 
-   html, body, #app {
-  font-family: 'Ankona', cursive, sans-serif !important;
+  html, body, #app {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
     /* ============ КОМПАКТНАЯ ШАПКА ============ */
@@ -64,7 +64,13 @@
       cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; touch-action: manipulation;
     }
     .month-nav button:active { background: #f0f0f0; }
-    .month-title { font-size: 14px; font-weight: 700; color: #333; text-transform: capitalize; }
+   .month-title {
+  font-family: 'Ankona', cursive, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  text-transform: capitalize;
+}
 
     #view-calendar {
       flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #ffffff;
@@ -253,7 +259,10 @@
       .btn-add { font-size: 13px; padding: 7px 14px; }
       .month-nav { padding: 8px 16px; }
       .month-nav button { font-size: 14px; }
-      .month-title { font-size: 16px; }
+      .month-title {
+  font-family: 'Ankona', cursive, sans-serif;
+  font-size: 16px;
+}
       .weekday-label { font-size: 11px; }
       .day-number { font-size: 13px; font-weight: 400; width: 24px; height: 24px; }
       .day-cell { padding: 4px 3px; }
