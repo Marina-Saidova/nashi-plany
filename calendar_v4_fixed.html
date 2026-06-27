@@ -414,61 +414,61 @@
       return GAS_URL && !GAS_URL.includes('ВСТАВЬТЕ');
     }
 
-    async function loadFromSheet() {
-      if (!isGasReady()) {
-        console.log('Google Sheets не настроен'); return;
-      }
-      const btn = document.getElementById('syncBtn');
-      if (btn) btn.classList.add('spin');
-
-      const callbackName = 'cb_' + Date.now();
-
-      window[callbackName] = function(data) {
-        delete window[callbackName];
-        if (script && script.parentNode) document.head.removeChild(script);
-        if (btn) btn.classList.remove('spin');
-
-        if (data.error) {
-          console.error('Server error:', data.error);
-          return;
-        }
-
-        if (data.events) {
-          events = data.events.map(e => ({
-            id: e.id || Date.now() + Math.random(),
-            title: e.title || '',
-            date: e.date || '',
-            time: e.time || '',
-            category: e.category || 'other',
-            desc: e.desc || ''
-          }));
-          renderCalendar();
-          if (document.getElementById('view-ideas').classList.contains('active')) renderIdeas();
-          console.log('Loaded', events.length, 'events');
-        }
-      };
-
-      const script = document.createElement('script');
-      script.src = GAS_URL + '?action=get&callback=' + callbackName;
-
-      script.onerror = function() {
-        delete window[callbackName];
-        if (script && script.parentNode) document.head.removeChild(script);
-        if (btn) btn.classList.remove('spin');
-        console.error('Failed to load data');
-      };
-
-      setTimeout(function() {
-        if (window[callbackName]) {
-          delete window[callbackName];
-          if (script && script.parentNode) document.head.removeChild(script);
-          if (btn) btn.classList.remove('spin');
-          console.error('Load timeout');
-        }
-      }, 10000);
-
-      document.head.appendChild(script);
+    function loadFromSheet() {
+  if (!isGasReady()) {
+    console.log('Google Sheets не настроен'); return;
+  }
+  const btn = document.getElementById('syncBtn');
+  if (btn) btn.classList.add('spin');
+  
+  const callbackName = 'cb_' + Date.now();
+  
+  window[callbackName] = function(data) {
+    delete window[callbackName];
+    if (script && script.parentNode) document.head.removeChild(script);
+    if (btn) btn.classList.remove('spin');
+    
+    if (data.error) {
+      console.error('Server error:', data.error);
+      return;
     }
+    
+    if (data.events) {
+      events = data.events.map(e => ({
+        id: e.id || Date.now() + Math.random(),
+        title: e.title || '',
+        date: e.date || '',
+        time: e.time || '',
+        category: e.category || 'other',
+        desc: e.desc || ''
+      }));
+      renderCalendar();
+      if (document.getElementById('view-ideas').classList.contains('active')) renderIdeas();
+      console.log('Loaded', events.length, 'events');
+    }
+  };
+  
+  const script = document.createElement('script');
+  script.src = GAS_URL + '?action=get&callback=' + callbackName;
+  
+  script.onerror = function() {
+    delete window[callbackName];
+    if (script && script.parentNode) document.head.removeChild(script);
+    if (btn) btn.classList.remove('spin');
+    console.error('Failed to load data');
+  };
+  
+  setTimeout(function() {
+    if (window[callbackName]) {
+      delete window[callbackName];
+      if (script && script.parentNode) document.head.removeChild(script);
+      if (btn) btn.classList.remove('spin');
+      console.error('Load timeout');
+    }
+  }, 10000);
+  
+  document.head.appendChild(script);
+}
 
     async function saveToServer(ev) {
       if (!isGasReady()) return;
