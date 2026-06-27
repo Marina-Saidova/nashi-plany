@@ -413,7 +413,73 @@
     function isGasReady() {
       return GAS_URL && !GAS_URL.includes('ВСТАВЬТЕ');
     }
-
+    function processSheetData(sheetEvents) {
+      console.log('Processing', sheetEvents.length, 'events from sheet');
+      if (!sheetEvents || sheetEvents.length === 0) {
+    console.log('No events in sheet, keeping local events');
+    return;
+  }
+  
+  sheetEvents.forEach(function(e) {
+    var id = e['ID'];
+    var existingIndex = events.findIndex(function(ev) { return String(ev.id) === String(id); });
+    
+    var dateStr = '';
+    if (e['Дата']) {
+      var dateStrRaw = String(e['Дата']);
+      if (dateStrRaw.length >= 10) {
+        dateStr = dateStrRaw.substring(0, 10);
+      }
+    }
+    
+    var timeStr = '';
+    if (e['Время начала']) {
+      var timeStrRaw = String(e['Время начала']);
+      var timeMatch = timeStrRaw.match(/T(\d{2}):(\d{2}):/);
+      if (timeMatch) {
+        timeStr = timeMatch[1] + ':' + timeMatch[2];
+      } else {
+        var simpleMatch = timeStrRaw.match(/(\d{2}):(\d{2})/);
+        if (simpleMatch) timeStr = simpleMatch[1] + ':' + simpleMatch[2];
+      }
+    }
+    
+    var cat = 'other';
+    var catMap = {
+      'Экскурсии': 'excursions',
+      'Покушоц!': 'food',
+      'Покушать': 'food',
+      'Выставки': 'exhibitions',
+      'Концерты': 'concerts',
+      'Кино': 'movies',
+      'Другое': 'other'
+    };
+    if (e['Категория'] && catMap[e['Категория']]) {
+      cat = catMap[e['Категория']];
+    }
+    
+    var newEvent = {
+      id: id || Date.now() + Math.random(),
+      title: e['Название'] || '',
+      date: dateStr,
+      time: timeStr,
+      category: cat,
+      desc: e['Описание'] || e['Место'] || e['Заметки'] || ''
+    };
+    
+    if (existingIndex >= 0) {
+      events[existingIndex] = newEvent;
+    } else {
+      events.push(newEvent);
+    }
+  });
+  
+  renderCalendar();
+  if (document.getElementById('view-ideas').classList.contains('active')) {
+    renderIdeas();
+  }
+  console.log('Total events after merge:', events.length);
+  }
     function loadFromSheet() {
       if (!isGasReady()) {
         console.log('Google Sheets не настроен'); return;
