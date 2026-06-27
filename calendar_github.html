@@ -140,9 +140,11 @@
     }
     .idea-card:active { transform: scale(0.98); box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
     .idea-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 4px; }
-    .idea-meta { display: flex; justify-content: space-between; align-items: center; }
+    .idea-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
     .idea-category { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 8px; }
     .idea-date { font-size: 10px; font-weight: 500; color: #888; }
+    .idea-place { font-size: 11px; color: #666; margin-top: 4px; width: 100%; }
+    .idea-time { font-size: 10px; color: #888; margin-top: 2px; }
 
     .empty-state { text-align: center; padding: 40px 16px; color: #aaa; }
     .empty-state-icon { font-size: 36px; margin-bottom: 8px; }
@@ -234,6 +236,7 @@
     }
     .day-popup-event-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
     .day-popup-event-time { font-size: 11px; opacity: 0.8; }
+    .day-popup-event-place { font-size: 11px; opacity: 0.8; margin-top: 2px; }
     .day-popup-add { padding: 8px 16px; border-top: 1px solid #f0f0f0; text-align: center; }
     .day-popup-add-btn {
       background: none; border: 2px dashed #667eea; color: #667eea; padding: 8px 16px;
@@ -274,21 +277,12 @@
       .idea-category { font-size: 11px; }
       .filter-chip { font-size: 12px; padding: 6px 12px; }
       .empty-state-text { font-size: 15px; }
-      .modal-overlay {
-  align-items: center !important;
-}
-.modal-sheet {
-  max-width: 420px;
-  border-radius: 16px !important;
-  transform: translateY(20px) !important;
-}
-.modal-overlay.show .modal-sheet {
-  transform: translateY(0) !important;
-}
-      
-      
+      .modal-overlay { align-items: center !important; }
+      .modal-sheet { max-width: 420px; border-radius: 16px !important; transform: translateY(20px) !important; }
+      .modal-overlay.show .modal-sheet { transform: translateY(0) !important; }
     }
   </style>
+<base target="_blank">
 </head>
 <body>
   <div id="app">
@@ -369,11 +363,19 @@
         <input type="date" class="form-input" id="inputDate">
       </div>
       <div class="form-group">
-        <label class="form-label">Время (необязательно)</label>
+        <label class="form-label">Время начала</label>
         <input type="time" class="form-input" id="inputTime">
       </div>
       <div class="form-group">
-        <label class="form-label">Описание / Место</label>
+        <label class="form-label">Время окончания</label>
+        <input type="time" class="form-input" id="inputTimeEnd">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Место</label>
+        <input type="text" class="form-input" id="inputPlace" placeholder="Например: Музей современного искусства">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Описание / Заметки</label>
         <textarea class="form-textarea" id="inputDesc" placeholder="Дополнительные детали..."></textarea>
       </div>
       <button class="btn-submit" onclick="saveEvent()" id="btnSave">Сохранить</button>
@@ -414,92 +416,99 @@
     let selectedDate = null;
     let currentFilter = 'all';
     let editingId = null;
-
     let events = [];
 
     function isGasReady() {
       return GAS_URL && !GAS_URL.includes('ВСТАВЬТЕ');
     }
+
     function processSheetData(sheetEvents) {
       console.log('Processing', sheetEvents.length, 'events from sheet');
       if (!sheetEvents || sheetEvents.length === 0) {
-    console.log('No events in sheet, keeping local events');
-    return;
-  }
-  
-  sheetEvents.forEach(function(e) {
-  var id = String(e['ID'] || '');
-  var title = e['Название'] || '';
-  var dateStr = '';
-if (e['Дата']) {
-  var d = new Date(e['Дата']);
-  var offset = d.getTimezoneOffset() * 60000; // в миллисекундах
-  var localDate = new Date(d.getTime() + offset);
-  dateStr = localDate.getFullYear() + '-' + 
-            String(localDate.getMonth()+1).padStart(2,'0') + '-' + 
-            String(localDate.getDate()).padStart(2,'0');
-  }
-  
-  var existingIndex = events.findIndex(function(ev) {
-    return String(ev.id) === id || (ev.title === title && ev.date === dateStr);
-  });
-    
-    var dateStr = '';
-    if (e['Дата']) {
-      var dateStrRaw = String(e['Дата']);
-      if (dateStrRaw.length >= 10) {
-        dateStr = dateStrRaw.substring(0, 10);
+        console.log('No events in sheet, keeping local events');
+        return;
       }
-    }
-    
-    var timeStr = '';
-    if (e['Время начала']) {
-      var timeStrRaw = String(e['Время начала']);
-      var timeMatch = timeStrRaw.match(/T(\d{2}):(\d{2}):/);
-      if (timeMatch) {
-        timeStr = timeMatch[1] + ':' + timeMatch[2];
-      } else {
-        var simpleMatch = timeStrRaw.match(/(\d{2}):(\d{2})/);
-        if (simpleMatch) timeStr = simpleMatch[1] + ':' + simpleMatch[2];
+
+      sheetEvents.forEach(function(e) {
+        var id = String(e['ID'] || '');
+        var title = e['Название'] || '';
+        var dateStr = '';
+        if (e['Дата']) {
+          var d = new Date(e['Дата']);
+          var offset = d.getTimezoneOffset() * 60000;
+          var localDate = new Date(d.getTime() + offset);
+          dateStr = localDate.getFullYear() + '-' +
+                    String(localDate.getMonth()+1).padStart(2,'0') + '-' +
+                    String(localDate.getDate()).padStart(2,'0');
+        }
+
+        var timeStr = '';
+        if (e['Время начала']) {
+          var timeStrRaw = String(e['Время начала']);
+          var timeMatch = timeStrRaw.match(/T(\d{2}):(\d{2}):/);
+          if (timeMatch) {
+            timeStr = timeMatch[1] + ':' + timeMatch[2];
+          } else {
+            var simpleMatch = timeStrRaw.match(/(\d{2}):(\d{2})/);
+            if (simpleMatch) timeStr = simpleMatch[1] + ':' + simpleMatch[2];
+          }
+        }
+
+        var timeEndStr = '';
+        if (e['Время окончания']) {
+          var teRaw = String(e['Время окончания']);
+          var teMatch = teRaw.match(/T(\d{2}):(\d{2}):/);
+          if (teMatch) {
+            timeEndStr = teMatch[1] + ':' + teMatch[2];
+          } else {
+            var teSimple = teRaw.match(/(\d{2}):(\d{2})/);
+            if (teSimple) timeEndStr = teSimple[1] + ':' + teSimple[2];
+          }
+        }
+
+        var cat = 'other';
+        var catMap = {
+          'Экскурсии': 'excursions',
+          'Покушоц!': 'food',
+          'Покушать': 'food',
+          'Выставки': 'exhibitions',
+          'Концерты': 'concerts',
+          'Кино': 'movies',
+          'Другое': 'other'
+        };
+        if (e['Категория'] && catMap[e['Категория']]) {
+          cat = catMap[e['Категория']];
+        }
+
+        var newEvent = {
+          id: id || Date.now() + Math.random(),
+          title: e['Название'] || '',
+          date: dateStr,
+          time: timeStr,
+          timeEnd: timeEndStr,
+          category: cat,
+          place: e['Место'] || '',
+          desc: e['Описание'] || e['Заметки'] || ''
+        };
+
+        var existingIndex = events.findIndex(function(ev) {
+          return String(ev.id) === id || (ev.title === title && ev.date === dateStr);
+        });
+
+        if (existingIndex >= 0) {
+          events[existingIndex] = newEvent;
+        } else {
+          events.push(newEvent);
+        }
+      });
+
+      renderCalendar();
+      if (document.getElementById('view-ideas').classList.contains('active')) {
+        renderIdeas();
       }
+      console.log('Total events after merge:', events.length);
     }
-    
-    var cat = 'other';
-    var catMap = {
-      'Экскурсии': 'excursions',
-      'Покушоц!': 'food',
-      'Покушать': 'food',
-      'Выставки': 'exhibitions',
-      'Концерты': 'concerts',
-      'Кино': 'movies',
-      'Другое': 'other'
-    };
-    if (e['Категория'] && catMap[e['Категория']]) {
-      cat = catMap[e['Категория']];
-    }
-    
-    var newEvent = {
-      id: id || Date.now() + Math.random(),
-      title: e['Название'] || '',
-      date: dateStr,
-      time: timeStr,
-      category: cat,
-      desc: e['Описание'] || e['Место'] || e['Заметки'] || ''
-    };
-    
-    if (existingIndex >= 0) {
-      events[existingIndex] = newEvent;
-    } else {
-      events.push(newEvent);
-    }
-  });
-  
-  renderCalendar();
-  if (document.getElementById('view-ideas').classList.contains('active')) {
-    renderIdeas();
-  }
-  console.log('Total events after merge:', events.length);
-  }
+
     function loadFromSheet() {
       if (!isGasReady()) {
         console.log('Google Sheets не настроен'); return;
@@ -518,9 +527,8 @@ if (e['Дата']) {
           console.error('Server error:', data.error);
           return;
         }
-
         if (data.events) {
-  processSheetData(data.events);
+          processSheetData(data.events);
         }
       };
 
@@ -614,8 +622,9 @@ if (e['Дата']) {
             const maxEvents = 3;
             dayEvents.slice(0, maxEvents).forEach(ev => {
               const cat = categories[ev.category] || categories.other;
-              const timeStr = ev.time ? `${ev.time} ` : '';
-              eventsHtml += `<div class="event-chip ${cat.class}" title="${ev.title}" onclick="event.stopPropagation(); openEditModalById('${ev.id}')">${timeStr}${ev.title}</div>`;
+              const timeRange = ev.time ? (ev.timeEnd ? `${ev.time}–${ev.timeEnd}` : ev.time) : '';
+              const timePrefix = timeRange ? `${timeRange} ` : '';
+              eventsHtml += `<div class="event-chip ${cat.class}" title="${ev.title}${ev.place ? ' — ' + ev.place : ''}" onclick="event.stopPropagation(); openEditModalById('${ev.id}')">${timePrefix}${ev.title}</div>`;
             });
             if (dayEvents.length > maxEvents) {
               eventsHtml += `<div class="event-chip more">+${dayEvents.length - maxEvents} ещё</div>`;
@@ -706,13 +715,16 @@ if (e['Дата']) {
     function renderIdeasList(ideas, container) {
       container.innerHTML = ideas.map(idea => {
         const cat = categories[idea.category] || categories.other;
+        const timeRange = idea.time ? (idea.timeEnd ? `${idea.time}–${idea.timeEnd}` : idea.time) : '';
         return `
           <div class="idea-card ${cat.class}" style="border-left-color: ${cat.color}" onclick="openEditModalById('${idea.id}')">
-            <div class="idea-title">${idea.title}</div>
+            <div class="idea-title">${escapeHtml(idea.title)}</div>
             <div class="idea-meta">
               <span class="idea-category ${cat.class}">${cat.name}</span>
               ${idea.date ? `<span class="idea-date">📅 ${formatDate(idea.date)}</span>` : '<span class="idea-date">📌 Без даты</span>'}
             </div>
+            ${idea.place ? `<div class="idea-place">📍 ${escapeHtml(idea.place)}</div>` : ''}
+            ${timeRange ? `<div class="idea-time">🕐 ${timeRange}</div>` : ''}
           </div>
         `;
       }).join('');
@@ -737,6 +749,8 @@ if (e['Дата']) {
       document.getElementById('inputTitle').value = '';
       document.getElementById('inputDate').value = selectedDate || '';
       document.getElementById('inputTime').value = '';
+      document.getElementById('inputTimeEnd').value = '';
+      document.getElementById('inputPlace').value = '';
       document.getElementById('inputDesc').value = '';
       selectCategory(document.querySelector('.cat-option[data-cat="excursions"]'));
       document.getElementById('modal').classList.add('show');
@@ -750,6 +764,8 @@ if (e['Дата']) {
       document.getElementById('inputTitle').value = ev.title;
       document.getElementById('inputDate').value = ev.date || '';
       document.getElementById('inputTime').value = ev.time || '';
+      document.getElementById('inputTimeEnd').value = ev.timeEnd || '';
+      document.getElementById('inputPlace').value = ev.place || '';
       document.getElementById('inputDesc').value = ev.desc || '';
       const catEl = document.querySelector(`.cat-option[data-cat="${ev.category}"]`) || document.querySelector('.cat-option[data-cat="other"]');
       selectCategory(catEl);
@@ -776,15 +792,43 @@ if (e['Дата']) {
       selectedCategory = el.dataset.cat;
     }
 
+    function checkDuplicate(title, date, excludeId) {
+      const normalizedTitle = title.trim().toLowerCase();
+      return events.find(e => {
+        if (excludeId && String(e.id) === String(excludeId)) return false;
+        const sameTitle = e.title.trim().toLowerCase() === normalizedTitle;
+        if (!sameTitle) return false;
+        if (date) {
+          return e.date === date;
+        } else {
+          return !e.date || e.date === '';
+        }
+      });
+    }
+
     function saveEvent() {
       const title = document.getElementById('inputTitle').value.trim();
       const date = document.getElementById('inputDate').value;
       const time = document.getElementById('inputTime').value;
+      const timeEnd = document.getElementById('inputTimeEnd').value;
+      const place = document.getElementById('inputPlace').value.trim();
       const desc = document.getElementById('inputDesc').value.trim();
 
       if (!title) {
         alert('Введите название');
         return;
+      }
+
+      // Проверка на дубликат
+      const duplicate = checkDuplicate(title, date, editingId);
+      if (duplicate) {
+        const location = duplicate.date ? `на ${formatDate(duplicate.date)}` : 'во вкладке «Идеи»';
+        const msg = `Событие «${title}» уже есть ${location}.
+
+Сохранить всё равно?`;
+        if (!confirm(msg)) {
+          return;
+        }
       }
 
       if (editingId) {
@@ -793,6 +837,8 @@ if (e['Дата']) {
           ev.title = title;
           ev.date = date;
           ev.time = time;
+          ev.timeEnd = timeEnd;
+          ev.place = place;
           ev.category = selectedCategory;
           ev.desc = desc;
           saveToServer(ev);
@@ -800,7 +846,7 @@ if (e['Дата']) {
       } else {
         const newEvent = {
           id: Date.now(),
-          title, date, time,
+          title, date, time, timeEnd, place,
           category: selectedCategory,
           desc
         };
@@ -821,6 +867,7 @@ if (e['Дата']) {
       if (ev) {
         ev.date = '';
         ev.time = '';
+        ev.timeEnd = '';
         saveToServer(ev);
       }
       closeModal();
@@ -854,11 +901,13 @@ if (e['Дата']) {
       } else {
         container.innerHTML = dayEvents.map(ev => {
           const cat = categories[ev.category] || categories.other;
+          const timeRange = ev.time ? (ev.timeEnd ? `${ev.time} – ${ev.timeEnd}` : ev.time) : '';
           return `
             <div class="day-popup-event ${cat.class}" style="background: ${cat.bg}; border-color: ${cat.color}" onclick="event.stopPropagation(); openEditModalById('${ev.id}')">
               <div class="day-popup-event-title" style="color: ${cat.color}">${ev.title}</div>
-              ${ev.time ? `<div class="day-popup-event-time">🕐 ${ev.time}</div>` : ''}
-              ${ev.desc ? `<div class="day-popup-event-time">${ev.desc}</div>` : ''}
+              ${timeRange ? `<div class="day-popup-event-time">🕐 ${timeRange}</div>` : ''}
+              ${ev.place ? `<div class="day-popup-event-place">📍 ${ev.place}</div>` : ''}
+              ${ev.desc ? `<div class="day-popup-event-place">📝 ${ev.desc}</div>` : ''}
             </div>
           `;
         }).join('');
@@ -871,9 +920,16 @@ if (e['Дата']) {
       document.getElementById('dayPopup').classList.remove('show');
     }
 
-    function addEventForDay() {
+    function addEventForDay() {https://github.com/Marina-Saidova/nashi-plany/blob/main/calendar_github.html
       closeDayPopup();
       openModal();
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
