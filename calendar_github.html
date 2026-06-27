@@ -280,7 +280,7 @@
 <body>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish-1</h1>
+      <h1>📅 Hamster&Fish-2</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">🔄</button>
         <button class="btn-add" onclick="openModal()">+ Добавить</button>
@@ -500,18 +500,7 @@
         }
 
         if (data.events) {
-          events = data.events.map(e => ({
-            id: e.id || Date.now() + Math.random(),
-            title: e.title || '',
-            date: e.date || '',
-            time: e.time || '',
-            category: e.category || 'other',
-            desc: e.desc || ''
-          }));
-          renderCalendar();
-          if (document.getElementById('view-ideas').classList.contains('active')) renderIdeas();
-          console.log('Loaded', events.length, 'events');
-        }
+  processSheetData(data.events);
       };
 
       const script = document.createElement('script');
