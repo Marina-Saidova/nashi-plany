@@ -123,6 +123,7 @@
     .cat-concerts { background: #fce4ec; color: #c62828; }
     .cat-movies { background: #f3e5f5; color: #6a1b9a; }
     .cat-other { background: #eceff1; color: #455a64; }
+    .cat-custom { background: #f5f5f5; color: #666; }
 
     /* === ИДЕИ === */
     #view-ideas { flex: 1; display: none; flex-direction: column; overflow: hidden; background: #ffffff; }
@@ -225,6 +226,16 @@
     }
     .author-option.selected { border-color: #667eea; background: #667eea; color: white; }
 
+    /* === КАСТОМНАЯ КАТЕГОРИЯ === */
+    .add-category-btn {
+      background: none; border: 1px dashed #667eea; color: #667eea;
+      padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      cursor: pointer; width: 100%; margin-top: 8px;
+    }
+    .custom-category-input {
+      display: none; margin-top: 8px;
+    }
+
     .btn-submit {
       width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
@@ -318,7 +329,7 @@
 <body>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.100500</h1>
+      <h1>📅 Hamster&Fish, v.2258</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -352,7 +363,7 @@
     </div>
 
     <div id="view-ideas">
-      <div class="ideas-filter">
+      <div class="ideas-filter" id="ideasFilter">
         <div class="filter-chip active" onclick="filterIdeas('all')" data-filter="all">Все</div>
         <div class="filter-chip" onclick="filterIdeas('excursions')" data-filter="excursions">Экскурсии</div>
         <div class="filter-chip" onclick="filterIdeas('food')" data-filter="food">Покушоц!</div>
@@ -387,13 +398,18 @@
       </div>
       <div class="form-group">
         <label class="form-label">Категория</label>
-        <div class="category-options">
+        <div class="category-options" id="categoryOptions">
           <div class="cat-option cat-excursions" data-cat="excursions" onclick="selectCategory(this)">🌲 Экскурсии</div>
           <div class="cat-option cat-food" data-cat="food" onclick="selectCategory(this)">🍕 Покушоц!</div>
           <div class="cat-option cat-exhibitions" data-cat="exhibitions" onclick="selectCategory(this)">🎨 Выставки</div>
           <div class="cat-option cat-concerts" data-cat="concerts" onclick="selectCategory(this)">🎵 Концерты</div>
           <div class="cat-option cat-movies" data-cat="movies" onclick="selectCategory(this)">🎬 Кино</div>
           <div class="cat-option cat-other" data-cat="other" onclick="selectCategory(this)">✨ Другое</div>
+        </div>
+        <button type="button" class="add-category-btn" onclick="showCustomCategory()">+ Добавить свою категорию</button>
+        <div class="custom-category-input" id="customCategoryInput">
+          <input type="text" class="form-input" id="inputCustomCategory" placeholder="Например: Дни рождения">
+          <button type="button" class="btn-submit" style="margin-top: 8px;" onclick="addCustomCategory()">Добавить</button>
         </div>
       </div>
       <div class="form-group">
@@ -418,7 +434,7 @@
         <label class="form-label">Кто добавляет</label>
         <div class="author-options">
           <div class="author-option selected" data-author="Я" onclick="selectAuthor(this)">👤 Я</div>
-          <div class="author-option" data-author="Hamster" onclick="selectAuthor(this)">👤 Hamster</div>
+          <div class="author-option" data-author="Подруга" onclick="selectAuthor(this)">👤 Подруга</div>
         </div>
       </div>
       
@@ -453,7 +469,8 @@
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwJmh7pS1As7WqGtj0nNxj1TDIh_6uWbsCFjCpph67FtF_di28htOKa4xdsq3EyZ5mHSw/exec';
 
-    const categories = {
+    // Базовые категории
+    const baseCategories = {
       excursions: { name: 'Экскурсии', class: 'cat-excursions', color: '#4caf50', bg: '#e8f5e9' },
       food: { name: 'Покушоц!', class: 'cat-food', color: '#ffc107', bg: '#fff8e1' },
       exhibitions: { name: 'Выставки', class: 'cat-exhibitions', color: '#2196f3', bg: '#e3f2fd' },
@@ -461,6 +478,9 @@
       movies: { name: 'Кино', class: 'cat-movies', color: '#9c27b0', bg: '#f3e5f5' },
       other: { name: 'Другое', class: 'cat-other', color: '#607d8b', bg: '#eceff1' }
     };
+
+    // Все категории (базовые + кастомные)
+    let categories = { ...baseCategories };
 
     let currentDate = new Date();
     let selectedCategory = 'excursions';
@@ -479,6 +499,79 @@
       document.querySelectorAll('.author-option').forEach(a => a.classList.remove('selected'));
       el.classList.add('selected');
       selectedAuthor = el.dataset.author;
+    }
+
+    // === КАСТОМНЫЕ КАТЕГОРИИ ===
+    function showCustomCategory() {
+      document.getElementById('customCategoryInput').style.display = 'block';
+    }
+
+    function addCustomCategory() {
+      const name = document.getElementById('inputCustomCategory').value.trim();
+      if (!name) return;
+      
+      const key = 'custom_' + Date.now();
+      
+      // Сохранить в Google Sheets
+      saveCategoryToServer(key, name);
+      
+      // Добавить локально
+      addCategoryToUI(key, name);
+      selectCategory(document.querySelector(`[data-cat="${key}"]`));
+      
+      document.getElementById('customCategoryInput').style.display = 'none';
+      document.getElementById('inputCustomCategory').value = '';
+    }
+
+    function addCategoryToUI(key, name) {
+      categories[key] = { name: name, class: 'cat-custom', color: '#999', bg: '#f5f5f5' };
+      
+      // Добавить в форму
+      const div = document.createElement('div');
+      div.className = 'cat-option cat-custom';
+      div.dataset.cat = key;
+      div.onclick = function() { selectCategory(this); };
+      div.textContent = '✨ ' + name;
+      document.getElementById('categoryOptions').appendChild(div);
+      
+      // Добавить в фильтры
+      const filterDiv = document.createElement('div');
+      filterDiv.className = 'filter-chip';
+      filterDiv.onclick = function() { filterIdeas(key); };
+      filterDiv.dataset.filter = key;
+      filterDiv.textContent = name;
+      document.getElementById('ideasFilter').appendChild(filterDiv);
+    }
+
+    function saveCategoryToServer(key, name) {
+      if (!isGasReady()) return;
+      
+      const callbackName = 'cat_cb_' + Date.now();
+      window[callbackName] = function(data) {
+        delete window[callbackName];
+        if (script && script.parentNode) document.head.removeChild(script);
+      };
+      
+      const script = document.createElement('script');
+      var params = [];
+      params.push('action=addCategory');
+      params.push('callback=' + encodeURIComponent(callbackName));
+      params.push('key=' + encodeURIComponent(key));
+      params.push('name=' + encodeURIComponent(name));
+      
+      script.src = GAS_URL + '?' + params.join('&');
+      document.head.appendChild(script);
+    }
+
+    function loadCategoriesFromSheet(cats) {
+      if (!cats) return;
+      cats.forEach(function(c) {
+        var key = c['Ключ'] || c['key'];
+        var name = c['Название'] || c['name'];
+        if (key && name && !categories[key]) {
+          addCategoryToUI(key, name);
+        }
+      });
     }
 
     function processSheetData(sheetEvents) {
@@ -536,6 +629,9 @@
         };
         if (e['Категория'] && catMap[e['Категория']]) {
           cat = catMap[e['Категория']];
+        } else if (e['Категория']) {
+          // Кастомная категория
+          cat = e['Категория'];
         }
 
         var newEvent = {
@@ -589,6 +685,9 @@
         if (data.events) {
           processSheetData(data.events);
         }
+        if (data.categories) {
+          loadCategoriesFromSheet(data.categories);
+        }
       };
 
       const script = document.createElement('script');
@@ -613,50 +712,51 @@
       document.head.appendChild(script);
     }
 
-   function saveToServer(ev) {
-  if (!isGasReady()) return;
-  
-  const catNameMap = {
-    excursions: 'Экскурсии',
-    food: 'Покушоц!',
-    exhibitions: 'Выставки',
-    concerts: 'Концерты',
-    movies: 'Кино',
-    other: 'Другое'
-  };
-  
-  const callbackName = 'save_cb_' + Date.now();
-  window[callbackName] = function(data) {
-    delete window[callbackName];
-    if (script && script.parentNode) document.head.removeChild(script);
-    console.log('Saved:', data);
-  };
-  
-  const script = document.createElement('script');
-  
-  // Ручная сборка URL, чтобы русские буквы не ломались
-  var params = [];
-  params.push('action=update');
-  params.push('callback=' + encodeURIComponent(callbackName));
-  params.push('id=' + encodeURIComponent(String(ev.id)));
-  params.push('title=' + encodeURIComponent(ev.title));
-  params.push('date=' + encodeURIComponent(ev.date || ''));
-  params.push('time=' + encodeURIComponent(ev.time || ''));
-  params.push('timeEnd=' + encodeURIComponent(ev.timeEnd || ''));
-  params.push('category=' + encodeURIComponent(catNameMap[ev.category] || ev.category));
-  params.push('place=' + encodeURIComponent(ev.place || ''));
-  params.push('author=' + encodeURIComponent(ev.author || 'Я'));
-  params.push('desc=' + encodeURIComponent(ev.desc || ''));
-  
-  script.src = GAS_URL + '?' + params.join('&');
-  script.onerror = function() {
-    delete window[callbackName];
-    if (script.parentNode) document.head.removeChild(script);
-    console.error('Save failed');
-  };
-  
-  document.head.appendChild(script);
-}
+    function saveToServer(ev) {
+      if (!isGasReady()) return;
+      
+      const catNameMap = {
+        excursions: 'Экскурсии',
+        food: 'Покушоц!',
+        exhibitions: 'Выставки',
+        concerts: 'Концерты',
+        movies: 'Кино',
+        other: 'Другое'
+      };
+      
+      var categoryName = catNameMap[ev.category] || categories[ev.category]?.name || ev.category;
+      
+      const callbackName = 'save_cb_' + Date.now();
+      window[callbackName] = function(data) {
+        delete window[callbackName];
+        if (script && script.parentNode) document.head.removeChild(script);
+        console.log('Saved:', data);
+      };
+      
+      const script = document.createElement('script');
+      
+      var params = [];
+      params.push('action=update');
+      params.push('callback=' + encodeURIComponent(callbackName));
+      params.push('id=' + encodeURIComponent(String(ev.id)));
+      params.push('title=' + encodeURIComponent(ev.title));
+      params.push('date=' + encodeURIComponent(ev.date || ''));
+      params.push('time=' + encodeURIComponent(ev.time || ''));
+      params.push('timeEnd=' + encodeURIComponent(ev.timeEnd || ''));
+      params.push('category=' + encodeURIComponent(categoryName));
+      params.push('place=' + encodeURIComponent(ev.place || ''));
+      params.push('author=' + encodeURIComponent(ev.author || 'Я'));
+      params.push('desc=' + encodeURIComponent(ev.desc || ''));
+      
+      script.src = GAS_URL + '?' + params.join('&');
+      script.onerror = function() {
+        delete window[callbackName];
+        if (script.parentNode) document.head.removeChild(script);
+        console.error('Save failed');
+      };
+      
+      document.head.appendChild(script);
+    }
 
     function deleteFromServer(id) {
       if (!isGasReady()) return;
@@ -797,7 +897,7 @@
           list.innerHTML = `
             <div class="empty-state">
               <div class="empty-state-icon">📝</div>
-              <div class="empty-state-text">Нет идей в категории «${categories[currentFilter].name}»</div>
+              <div class="empty-state-text">Нет идей в категории «${getCategoryName(currentFilter)}»</div>
             </div>
           `;
           return;
@@ -819,6 +919,10 @@
       renderIdeasList(ideas, list);
     }
 
+    function getCategoryName(key) {
+      return categories[key]?.name || key;
+    }
+
     function renderIdeasList(ideas, container) {
       container.innerHTML = ideas.map(idea => {
         const cat = categories[idea.category] || categories.other;
@@ -827,7 +931,7 @@
           <div class="idea-card ${cat.class}" onclick="openEditModalById('${idea.id}')">
             <div class="idea-title">${escapeHtml(idea.title)}</div>
             <div class="idea-meta">
-              <span class="idea-category ${cat.class}">${cat.name}</span>
+              <span class="idea-category ${cat.class}">${getCategoryName(idea.category)}</span>
               ${idea.date ? `<span class="idea-date">📅 ${formatDate(idea.date)}</span>` : '<span class="idea-date">📌 Без даты</span>'}
             </div>
             ${idea.place ? `<div class="idea-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(idea.place)}" target="_blank">📍 ${escapeHtml(idea.place)}</a></div>` : ''}
@@ -862,7 +966,6 @@
       document.getElementById('inputDesc').value = '';
       selectCategory(document.querySelector('.cat-option[data-cat="excursions"]'));
       
-      // Восстановить последнего автора
       const savedAuthor = localStorage.getItem('lastAuthor');
       if (savedAuthor) {
         const el = document.querySelector(`.author-option[data-author="${savedAuthor}"]`);
@@ -870,6 +973,9 @@
       } else {
         selectAuthor(document.querySelector('.author-option[data-author="Я"]'));
       }
+      
+      document.getElementById('customCategoryInput').style.display = 'none';
+      document.getElementById('inputCustomCategory').value = '';
       
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'none';
@@ -885,6 +991,7 @@
       document.getElementById('inputTimeEnd').value = ev.timeEnd || '';
       document.getElementById('inputPlace').value = ev.place || '';
       document.getElementById('inputDesc').value = ev.desc || '';
+      
       const catEl = document.querySelector(`.cat-option[data-cat="${ev.category}"]`) || document.querySelector('.cat-option[data-cat="other"]');
       selectCategory(catEl);
       
@@ -941,7 +1048,6 @@
         return;
       }
 
-      // Проверка на дубликат
       const duplicate = checkDuplicate(title, date, editingId);
       if (duplicate) {
         const location = duplicate.date ? `на ${formatDate(duplicate.date)}` : 'во вкладке «Идеи»';
@@ -976,7 +1082,6 @@
         saveToServer(newEvent);
       }
 
-      // Запомнить автора
       localStorage.setItem('lastAuthor', selectedAuthor);
 
       closeModal();
@@ -1062,7 +1167,6 @@
       renderCalendar();
       if (isGasReady()) loadFromSheet();
       
-      // Восстановить последнюю вкладку
       const savedView = localStorage.getItem('lastView');
       if (savedView === 'ideas') {
         switchView('ideas');
