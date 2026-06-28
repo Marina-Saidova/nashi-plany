@@ -614,25 +614,25 @@
     }
 
     function saveToServer(ev) {
-      if (!isGasReady()) return;
-      
-      const catNameMap = {
-        excursions: 'Экскурсии',
-        food: 'Покушоц!',
-        exhibitions: 'Выставки',
-        concerts: 'Концерты',
-        movies: 'Кино',
-        other: 'Другое'
-      };
-      
-      const callbackName = 'save_cb_' + Date.now();
-      window[callbackName] = function(data) {
-        delete window[callbackName];
-        if (script && script.parentNode) document.head.removeChild(script);
-        console.log('Saved:', data);
-      };
-      
-      const script = document.createElement('script');
+  if (!isGasReady()) return;
+  
+  const catNameMap = {
+    excursions: 'Экскурсии',
+    food: 'Покушоц!',
+    exhibitions: 'Выставки',
+    concerts: 'Концерты',
+    movies: 'Кино',
+    other: 'Другое'
+  };
+  
+  const callbackName = 'save_cb_' + Date.now();
+  window[callbackName] = function(data) {
+    delete window[callbackName];
+    if (script && script.parentNode) document.head.removeChild(script);
+    console.log('Saved:', data);
+  };
+  
+  const script = document.createElement('script');
       const params = new URLSearchParams({
         action: 'update',
         callback: callbackName,
@@ -646,6 +646,29 @@
         author: ev.author || 'Я',
         desc: ev.desc || ''
       });
+        // Ручная сборка URL, чтобы русские буквы не ломались
+  const params = [];
+  params.push('action=update');
+  params.push('callback=' + encodeURIComponent(callbackName));
+  params.push('id=' + encodeURIComponent(String(ev.id)));
+  params.push('title=' + encodeURIComponent(ev.title));
+  params.push('date=' + encodeURIComponent(ev.date || ''));
+  params.push('time=' + encodeURIComponent(ev.time || ''));
+  params.push('timeEnd=' + encodeURIComponent(ev.timeEnd || ''));
+  params.push('category=' + encodeURIComponent(catNameMap[ev.category] || ev.category));
+  params.push('place=' + encodeURIComponent(ev.place || ''));
+  params.push('author=' + encodeURIComponent(ev.author || 'Я'));
+  params.push('desc=' + encodeURIComponent(ev.desc || ''));
+  
+  script.src = GAS_URL + '?' + params.join('&');
+  script.onerror = function() {
+    delete window[callbackName];
+    if (script.parentNode) document.head.removeChild(script);
+    console.error('Save failed');
+  };
+  
+  document.head.appendChild(script);
+}
       
       script.src = GAS_URL + '?' + params.toString();
       script.onerror = function() {
