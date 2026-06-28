@@ -613,7 +613,7 @@
       document.head.appendChild(script);
     }
 
-    function saveToServer(ev) {
+   function saveToServer(ev) {
   if (!isGasReady()) return;
   
   const catNameMap = {
@@ -633,21 +633,9 @@
   };
   
   const script = document.createElement('script');
-      const params = new URLSearchParams({
-        action: 'update',
-        callback: callbackName,
-        id: String(ev.id),
-        title: ev.title,
-        date: ev.date || '',
-        time: ev.time || '',
-        timeEnd: ev.timeEnd || '',
-        category: catNameMap[ev.category] || ev.category,
-        place: ev.place || '',
-        author: ev.author || 'Я',
-        desc: ev.desc || ''
-      });
-        // Ручная сборка URL, чтобы русские буквы не ломались
-  const params = [];
+  
+  // Ручная сборка URL, чтобы русские буквы не ломались
+  var params = [];
   params.push('action=update');
   params.push('callback=' + encodeURIComponent(callbackName));
   params.push('id=' + encodeURIComponent(String(ev.id)));
@@ -669,16 +657,6 @@
   
   document.head.appendChild(script);
 }
-      
-      script.src = GAS_URL + '?' + params.toString();
-      script.onerror = function() {
-        delete window[callbackName];
-        if (script.parentNode) document.head.removeChild(script);
-        console.error('Save failed');
-      };
-      
-      document.head.appendChild(script);
-    }
 
     function deleteFromServer(id) {
       if (!isGasReady()) return;
