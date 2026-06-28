@@ -316,7 +316,7 @@
 <body>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.category2.0</h1>
+      <h1>📅 Hamster&Fish, v.2262-debug</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -419,7 +419,7 @@
         <label class="form-label">Кто добавляет</label>
         <div class="author-options">
           <div class="author-option selected" data-author="Я" onclick="selectAuthor(this)">👤 Я</div>
-          <div class="author-option" data-author="Hamster" onclick="selectAuthor(this)">👤 Hamster</div>
+          <div class="author-option" data-author="Подруга" onclick="selectAuthor(this)">👤 Подруга</div>
         </div>
       </div>
       <div class="form-group">
@@ -544,9 +544,10 @@
     }
 
     function findOrCreateCategory(name) {
+      console.log('findOrCreateCategory:', name);
       // Сначала ищем по имени
       var key = findCategoryKeyByName(name);
-      if (key) return key;
+      if (key) { console.log('Found by name:', key); return key; }
       // Потом ищем по ключу (если name уже является ключом)
       if (categories[name]) return name;
       // Если не нашли — создаём временную категорию
@@ -557,6 +558,8 @@
     }
 
     function loadCategoriesFromSheet(cats) {
+      console.log('=== loadCategoriesFromSheet ===');
+      console.log('Categories from server:', cats);
       if (!cats) return;
       cats.forEach(function(c) {
         var key = c['Ключ'] || c['key'];
@@ -574,13 +577,16 @@
     }
 
     function processSheetData(sheetEvents) {
-      console.log('Processing', sheetEvents.length, 'events from sheet');
+      console.log('=== processSheetData START ===');
+      console.log('Events from server:', sheetEvents.length);
+      console.log('Current categories:', Object.keys(categories));
       if (!sheetEvents || sheetEvents.length === 0) {
         console.log('No events in sheet, keeping local events');
         return;
       }
 
       sheetEvents.forEach(function(e) {
+        console.log('Processing event:', e['Название'], 'Cat:', e['Категория'], 'Date:', e['Дата']);
         var id = String(e['ID'] || '');
         var title = e['Название'] || '';
         var dateStr = '';
@@ -662,6 +668,8 @@
         renderIdeas();
       }
       console.log('Total events after merge:', events.length);
+      console.log('All events:', events.map(ev => ({title: ev.title, cat: ev.category, date: ev.date})));
+      console.log('=== processSheetData END ===');
     }
 
     function loadFromSheet() {
