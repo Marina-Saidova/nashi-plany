@@ -274,6 +274,37 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
 
+    /* === МЕНЮ КАТЕГОРИЙ === */
+    .cat-menu-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.3); z-index: 2000; justify-content: center; align-items: center;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .cat-menu-overlay.show { display: flex; opacity: 1; }
+    .cat-menu {
+      background: white; border-radius: 14px; width: 280px; overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.2s;
+    }
+    .cat-menu-overlay.show .cat-menu { transform: scale(1); }
+    .cat-menu-header {
+      padding: 16px; border-bottom: 1px solid #f0f0f0; font-size: 15px; font-weight: 700; color: #333;
+    }
+    .cat-menu-item {
+      padding: 14px 16px; font-size: 14px; color: #333; cursor: pointer;
+      display: flex; align-items: center; gap: 10px; transition: background 0.15s;
+      border-bottom: 1px solid #f8f8f8;
+    }
+    .cat-menu-item:last-child { border-bottom: none; }
+    .cat-menu-item:active { background: #f5f5f5; }
+    .cat-menu-item.danger { color: #e74c3c; }
+    .cat-menu-item .icon { font-size: 18px; width: 24px; text-align: center; }
+
+    .cat-edit-input {
+      width: 100%; padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 10px;
+      font-size: 14px; margin: 0 16px 16px 16px; width: calc(100% - 32px);
+    }
+    .cat-edit-input:focus { outline: none; border-color: #667eea; }
+
     @media (min-width: 769px) {
       .header { padding: 8px 16px; padding-top: max(8px, env(safe-area-inset-top)); }
       .header h1 { font-size: 17px; }
@@ -316,7 +347,7 @@
 <body>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2262-debug</h1>
+      <h1>📅 Hamster&Fish, v.2263</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -419,7 +450,7 @@
         <label class="form-label">Кто добавляет</label>
         <div class="author-options">
           <div class="author-option selected" data-author="Я" onclick="selectAuthor(this)">👤 Я</div>
-          <div class="author-option" data-author="Подруга" onclick="selectAuthor(this)">👤 Подруга</div>
+          <div class="author-option" data-author="Hamster" onclick="selectAuthor(this)">👤 Hamster</div>
         </div>
       </div>
       <div class="form-group">
@@ -443,6 +474,34 @@
       <div class="day-popup-events" id="dayPopupEvents"></div>
       <div class="day-popup-add">
         <button class="day-popup-add-btn" onclick="addEventForDay()">+ Добавить событие</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Меню редактирования категории -->
+  <div class="cat-menu-overlay" id="catMenuOverlay" onclick="closeCatMenu(event)">
+    <div class="cat-menu" id="catMenu" onclick="event.stopPropagation()">
+      <div class="cat-menu-header" id="catMenuTitle">Категория</div>
+      <div class="cat-menu-item" onclick="editCatName()">
+        <span class="icon">✏️</span> Переименовать
+      </div>
+      <div class="cat-menu-item danger" onclick="deleteCat()">
+        <span class="icon">🗑️</span> Удалить категорию
+      </div>
+      <div class="cat-menu-item" onclick="closeCatMenu()">
+        <span class="icon">✕</span> Отмена
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка переименования -->
+  <div class="cat-menu-overlay" id="catRenameOverlay" onclick="closeCatRename(event)">
+    <div class="cat-menu" onclick="event.stopPropagation()">
+      <div class="cat-menu-header">Переименовать категорию</div>
+      <input type="text" class="cat-edit-input" id="catRenameInput" placeholder="Новое название">
+      <div style="display: flex; gap: 8px; padding: 0 16px 16px;">
+        <button class="btn-submit" style="flex:1; margin-top:0;" onclick="saveCatRename()">Сохранить</button>
+        <button class="btn-submit btn-secondary" style="flex:1; margin-top:0;" onclick="closeCatRename()">Отмена</button>
       </div>
     </div>
   </div>
@@ -514,7 +573,171 @@
       filterDiv.onclick = function() { filterIdeas(key); };
       filterDiv.dataset.filter = key;
       filterDiv.textContent = name;
+      // Добавляем контекстное меню только для кастомных категорий
+      if (key.startsWith('custom_') || key.startsWith('temp_')) {
+        filterDiv.oncontextmenu = function(e) { showCatMenu(e, key); return false; };
+        // Для мобильных — долгий тап
+        let pressTimer;
+        filterDiv.addEventListener('touchstart', function(e) {
+          pressTimer = setTimeout(function() { showCatMenu(e, key); }, 600);
+        });
+        filterDiv.addEventListener('touchend', function() { clearTimeout(pressTimer); });
+        filterDiv.addEventListener('touchmove', function() { clearTimeout(pressTimer); });
+      }
       document.getElementById('ideasFilter').appendChild(filterDiv);
+    }
+
+    // === РЕДАКТИРОВАНИЕ КАТЕГОРИЙ ===
+    let catMenuKey = null;
+
+    function showCatMenu(e, key) {
+      catMenuKey = key;
+      const cat = categories[key];
+      if (!cat) return;
+      document.getElementById('catMenuTitle').textContent = cat.name;
+      document.getElementById('catMenuOverlay').classList.add('show');
+      // Позиционируем меню рядом с курсором/тапом
+      if (e.clientX && e.clientY) {
+        const menu = document.getElementById('catMenu');
+        menu.style.position = 'absolute';
+        menu.style.left = Math.min(e.clientX, window.innerWidth - 300) + 'px';
+        menu.style.top = Math.min(e.clientY, window.innerHeight - 200) + 'px';
+      }
+    }
+
+    function closeCatMenu(e) {
+      if (e && e.target !== e.currentTarget) return;
+      document.getElementById('catMenuOverlay').classList.remove('show');
+      catMenuKey = null;
+    }
+
+    function editCatName() {
+      if (!catMenuKey || !categories[catMenuKey]) return;
+      document.getElementById('catRenameInput').value = categories[catMenuKey].name;
+      closeCatMenu();
+      document.getElementById('catRenameOverlay').classList.add('show');
+      setTimeout(() => document.getElementById('catRenameInput').focus(), 100);
+    }
+
+    function closeCatRename(e) {
+      if (e && e.target !== e.currentTarget) return;
+      document.getElementById('catRenameOverlay').classList.remove('show');
+      catMenuKey = null;
+    }
+
+    function saveCatRename() {
+      if (!catMenuKey) return;
+      const newName = document.getElementById('catRenameInput').value.trim();
+      if (!newName) { closeCatRename(); return; }
+
+      // Проверяем, нет ли уже категории с таким именем
+      const existingKey = findCategoryKeyByName(newName);
+      if (existingKey && existingKey !== catMenuKey) {
+        alert('Категория «' + newName + '» уже существует');
+        return;
+      }
+
+      const oldName = categories[catMenuKey].name;
+      categories[catMenuKey].name = newName;
+
+      // Обновляем UI фильтров
+      const filterChip = document.querySelector(`.filter-chip[data-filter="${catMenuKey}"]`);
+      if (filterChip) filterChip.textContent = newName;
+
+      // Обновляем UI категорий в форме
+      const catOption = document.querySelector(`.cat-option[data-cat="${catMenuKey}"]`);
+      if (catOption) catOption.textContent = '✨ ' + newName;
+
+      // Обновляем все события с этой категорией
+      events.forEach(function(ev) {
+        if (ev.category === catMenuKey) {
+          saveToServer(ev);
+        }
+      });
+
+      // Сохраняем новое имя на сервере
+      renameCategoryOnServer(catMenuKey, oldName, newName);
+
+      renderIdeas();
+      renderCalendar();
+      closeCatRename();
+    }
+
+    function deleteCat() {
+      if (!catMenuKey) return;
+      const cat = categories[catMenuKey];
+      if (!cat) return;
+
+      const eventsCount = events.filter(e => e.category === catMenuKey).length;
+      const msg = eventsCount > 0 
+        ? `Удалить категорию «${cat.name}»?\n\n${eventsCount} событий будет перенесено в «Другое».`
+        : `Удалить категорию «${cat.name}»?`;
+
+      if (!confirm(msg)) { closeCatMenu(); return; }
+
+      // Переносим события в "Другое"
+      events.forEach(function(ev) {
+        if (ev.category === catMenuKey) {
+          ev.category = 'other';
+          saveToServer(ev);
+        }
+      });
+
+      // Удаляем с сервера
+      deleteCategoryFromServer(catMenuKey);
+
+      // Удаляем из UI
+      const filterChip = document.querySelector(`.filter-chip[data-filter="${catMenuKey}"]`);
+      if (filterChip) filterChip.remove();
+      const catOption = document.querySelector(`.cat-option[data-cat="${catMenuKey}"]`);
+      if (catOption) catOption.remove();
+
+      delete categories[catMenuKey];
+
+      // Если фильтр был на этой категории — сбрасываем на "все"
+      if (currentFilter === catMenuKey) {
+        currentFilter = 'all';
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        document.querySelector('.filter-chip[data-filter="all"]').classList.add('active');
+      }
+
+      renderIdeas();
+      renderCalendar();
+      closeCatMenu();
+    }
+
+    function renameCategoryOnServer(key, oldName, newName) {
+      if (!isGasReady()) return;
+      const callbackName = 'rename_cat_cb_' + Date.now();
+      window[callbackName] = function(data) {
+        delete window[callbackName];
+        if (script && script.parentNode) document.head.removeChild(script);
+      };
+      const script = document.createElement('script');
+      var params = [];
+      params.push('action=renameCategory');
+      params.push('callback=' + encodeURIComponent(callbackName));
+      params.push('key=' + encodeURIComponent(key));
+      params.push('oldName=' + encodeURIComponent(oldName));
+      params.push('newName=' + encodeURIComponent(newName));
+      script.src = GAS_URL + '?' + params.join('&');
+      document.head.appendChild(script);
+    }
+
+    function deleteCategoryFromServer(key) {
+      if (!isGasReady()) return;
+      const callbackName = 'del_cat_cb_' + Date.now();
+      window[callbackName] = function(data) {
+        delete window[callbackName];
+        if (script && script.parentNode) document.head.removeChild(script);
+      };
+      const script = document.createElement('script');
+      var params = [];
+      params.push('action=deleteCategory');
+      params.push('callback=' + encodeURIComponent(callbackName));
+      params.push('key=' + encodeURIComponent(key));
+      script.src = GAS_URL + '?' + params.join('&');
+      document.head.appendChild(script);
     }
 
     function saveCategoryToServer(key, name) {
@@ -544,10 +767,9 @@
     }
 
     function findOrCreateCategory(name) {
-      console.log('findOrCreateCategory:', name);
       // Сначала ищем по имени
       var key = findCategoryKeyByName(name);
-      if (key) { console.log('Found by name:', key); return key; }
+      if (key) return key;
       // Потом ищем по ключу (если name уже является ключом)
       if (categories[name]) return name;
       // Если не нашли — создаём временную категорию
@@ -558,8 +780,6 @@
     }
 
     function loadCategoriesFromSheet(cats) {
-      console.log('=== loadCategoriesFromSheet ===');
-      console.log('Categories from server:', cats);
       if (!cats) return;
       cats.forEach(function(c) {
         var key = c['Ключ'] || c['key'];
@@ -577,16 +797,13 @@
     }
 
     function processSheetData(sheetEvents) {
-      console.log('=== processSheetData START ===');
-      console.log('Events from server:', sheetEvents.length);
-      console.log('Current categories:', Object.keys(categories));
+      console.log('Processing', sheetEvents.length, 'events from sheet');
       if (!sheetEvents || sheetEvents.length === 0) {
         console.log('No events in sheet, keeping local events');
         return;
       }
 
       sheetEvents.forEach(function(e) {
-        console.log('Processing event:', e['Название'], 'Cat:', e['Категория'], 'Date:', e['Дата']);
         var id = String(e['ID'] || '');
         var title = e['Название'] || '';
         var dateStr = '';
@@ -668,8 +885,6 @@
         renderIdeas();
       }
       console.log('Total events after merge:', events.length);
-      console.log('All events:', events.map(ev => ({title: ev.title, cat: ev.category, date: ev.date})));
-      console.log('=== processSheetData END ===');
     }
 
     function loadFromSheet() {
@@ -1163,7 +1378,7 @@
     }
 
     function addEventForDay() {
-      closeDayPopup();
+      closeDayPopup();gjlh
       openModal();
     }
 
