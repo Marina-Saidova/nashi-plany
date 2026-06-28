@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Наши планы</title>
-  
+
   <!-- ============================================ -->
   <!-- === CSS === -->
   <!-- ============================================ -->
@@ -325,6 +325,7 @@
     }
   </style>
   <!-- === КОНЕЦ CSS === -->
+<base target="_blank">
 </head>
 <body>
   <div id="app">
@@ -428,7 +429,7 @@
         <label class="form-label">Место</label>
         <input type="text" class="form-input" id="inputPlace" placeholder="Например: Музей современного искусства">
       </div>
-      
+
       <!-- === ВЫБОР АВТОРА === -->
       <div class="form-group">
         <label class="form-label">Кто добавляет</label>
@@ -437,7 +438,7 @@
           <div class="author-option" data-author="Подруга" onclick="selectAuthor(this)">👤 Подруга</div>
         </div>
       </div>
-      
+
       <div class="form-group">
         <label class="form-label">Описание / Заметки</label>
         <textarea class="form-textarea" id="inputDesc" placeholder="Дополнительные детали..."></textarea>
@@ -509,30 +510,28 @@
     function addCustomCategory() {
       const name = document.getElementById('inputCustomCategory').value.trim();
       if (!name) return;
-      
+
       const key = 'custom_' + Date.now();
-      
+
       // Сохранить в Google Sheets
       saveCategoryToServer(key, name);
-      
+
       // Добавить локально
       addCategoryToUI(key, name);
       selectCategory(document.querySelector(`[data-cat="${key}"]`));
-      
+
       document.getElementById('customCategoryInput').style.display = 'none';
       document.getElementById('inputCustomCategory').value = '';
     }
 
-  function addCategoryToUI(key, name, color) {
-  categories[key] = { 
-    name: name, 
-    class: 'cat-custom', 
-    color: color || '#999', 
-    bg: color || '#f5f5f5' 
-  };
-  // ... остальной код
-}
-      
+    function addCategoryToUI(key, name, color) {
+      categories[key] = { 
+        name: name, 
+        class: 'cat-custom', 
+        color: color || '#999', 
+        bg: color || '#f5f5f5' 
+      };
+
       // Добавить в форму
       const div = document.createElement('div');
       div.className = 'cat-option cat-custom';
@@ -540,7 +539,7 @@
       div.onclick = function() { selectCategory(this); };
       div.textContent = '✨ ' + name;
       document.getElementById('categoryOptions').appendChild(div);
-      
+
       // Добавить в фильтры
       const filterDiv = document.createElement('div');
       filterDiv.className = 'filter-chip';
@@ -552,20 +551,20 @@
 
     function saveCategoryToServer(key, name) {
       if (!isGasReady()) return;
-      
+
       const callbackName = 'cat_cb_' + Date.now();
       window[callbackName] = function(data) {
         delete window[callbackName];
         if (script && script.parentNode) document.head.removeChild(script);
       };
-      
+
       const script = document.createElement('script');
       var params = [];
       params.push('action=addCategory');
       params.push('callback=' + encodeURIComponent(callbackName));
       params.push('key=' + encodeURIComponent(key));
       params.push('name=' + encodeURIComponent(name));
-      
+
       script.src = GAS_URL + '?' + params.join('&');
       document.head.appendChild(script);
     }
@@ -721,7 +720,7 @@
 
     function saveToServer(ev) {
       if (!isGasReady()) return;
-      
+
       const catNameMap = {
         excursions: 'Экскурсии',
         food: 'Покушоц!',
@@ -730,18 +729,18 @@
         movies: 'Кино',
         other: 'Другое'
       };
-      
+
       var categoryName = catNameMap[ev.category] || categories[ev.category]?.name || ev.category;
-      
+
       const callbackName = 'save_cb_' + Date.now();
       window[callbackName] = function(data) {
         delete window[callbackName];
         if (script && script.parentNode) document.head.removeChild(script);
         console.log('Saved:', data);
       };
-      
+
       const script = document.createElement('script');
-      
+
       var params = [];
       params.push('action=update');
       params.push('callback=' + encodeURIComponent(callbackName));
@@ -754,33 +753,33 @@
       params.push('place=' + encodeURIComponent(ev.place || ''));
       params.push('author=' + encodeURIComponent(ev.author || 'Я'));
       params.push('desc=' + encodeURIComponent(ev.desc || ''));
-      
+
       script.src = GAS_URL + '?' + params.join('&');
       script.onerror = function() {
         delete window[callbackName];
         if (script.parentNode) document.head.removeChild(script);
         console.error('Save failed');
       };
-      
+
       document.head.appendChild(script);
     }
 
     function deleteFromServer(id) {
       if (!isGasReady()) return;
-      
+
       const callbackName = 'del_cb_' + Date.now();
       window[callbackName] = function(data) {
         delete window[callbackName];
         if (script && script.parentNode) document.head.removeChild(script);
       };
-      
+
       const script = document.createElement('script');
       script.src = GAS_URL + '?action=delete&callback=' + callbackName + '&id=' + encodeURIComponent(id);
       script.onerror = function() {
         delete window[callbackName];
         if (script.parentNode) document.head.removeChild(script);
       };
-      
+
       document.head.appendChild(script);
     }
 
@@ -972,7 +971,7 @@
       document.getElementById('inputPlace').value = '';
       document.getElementById('inputDesc').value = '';
       selectCategory(document.querySelector('.cat-option[data-cat="excursions"]'));
-      
+
       const savedAuthor = localStorage.getItem('lastAuthor');
       if (savedAuthor) {
         const el = document.querySelector(`.author-option[data-author="${savedAuthor}"]`);
@@ -980,10 +979,10 @@
       } else {
         selectAuthor(document.querySelector('.author-option[data-author="Я"]'));
       }
-      
+
       document.getElementById('customCategoryInput').style.display = 'none';
       document.getElementById('inputCustomCategory').value = '';
-      
+
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'none';
       document.getElementById('btnSave').textContent = 'Сохранить';
@@ -998,13 +997,13 @@
       document.getElementById('inputTimeEnd').value = ev.timeEnd || '';
       document.getElementById('inputPlace').value = ev.place || '';
       document.getElementById('inputDesc').value = ev.desc || '';
-      
+
       const catEl = document.querySelector(`.cat-option[data-cat="${ev.category}"]`) || document.querySelector('.cat-option[data-cat="other"]');
       selectCategory(catEl);
-      
+
       const authorEl = document.querySelector(`.author-option[data-author="${ev.author || 'Я'}"]`) || document.querySelector('.author-option[data-author="Я"]');
       selectAuthor(authorEl);
-      
+
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'flex';
       document.getElementById('btnSave').textContent = 'Сохранить изменения';
@@ -1173,7 +1172,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       renderCalendar();
       if (isGasReady()) loadFromSheet();
-      
+
       const savedView = localStorage.getItem('lastView');
       if (savedView === 'ideas') {
         switchView('ideas');
