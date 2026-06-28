@@ -316,7 +316,7 @@
 <body>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.category</h1>
+      <h1>📅 Hamster&Fish, v.category2.0</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -495,6 +495,8 @@
 
     function addCategoryToUI(key, name, color) {
       if (categories[key]) return;
+      // Проверяем, нет ли уже категории с таким именем
+      if (findCategoryKeyByName(name)) return;
       categories[key] = { 
         name: name, 
         class: 'cat-custom', 
@@ -541,14 +543,33 @@
       return null;
     }
 
+    function findOrCreateCategory(name) {
+      // Сначала ищем по имени
+      var key = findCategoryKeyByName(name);
+      if (key) return key;
+      // Потом ищем по ключу (если name уже является ключом)
+      if (categories[name]) return name;
+      // Если не нашли — создаём временную категорию
+      var tempKey = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+      addCategoryToUI(tempKey, name);
+      console.log('Created temp category:', tempKey, name);
+      return tempKey;
+    }
+
     function loadCategoriesFromSheet(cats) {
       if (!cats) return;
       cats.forEach(function(c) {
         var key = c['Ключ'] || c['key'];
         var name = c['Название'] || c['name'];
-        if (key && name && !categories[key]) {
-          addCategoryToUI(key, name);
+        if (!key || !name) return;
+        // Если такой ключ уже есть — обновляем имя
+        if (categories[key]) {
+          categories[key].name = name;
+          return;
         }
+        // Если такое имя уже есть у другой категории — не создаём дубль
+        if (findCategoryKeyByName(name)) return;
+        addCategoryToUI(key, name);
       });
     }
 
@@ -605,11 +626,12 @@
           'Кино': 'movies', 'movies': 'movies',
           'Другое': 'other', 'other': 'other'
         };
-        if (e['Категория'] && catMap[e['Категория']]) {
-          cat = catMap[e['Категория']];
-        } else if (e['Категория']) {
-          var customKey = findCategoryKeyByName(e['Категория']);
-          cat = customKey || e['Категория'];
+        var catName = e['Категория'] || '';
+        if (catName && catMap[catName]) {
+          cat = catMap[catName];
+        } else if (catName) {
+          // Кастомная категория — ищем или создаём
+          cat = findOrCreateCategory(catName);
         }
 
         var newEvent = {
