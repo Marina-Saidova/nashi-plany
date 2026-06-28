@@ -717,29 +717,30 @@ function deleteFromServer(id) {
       renderCalendar();
     }
 
-    function switchView(view) {
-      const calendarView = document.getElementById('view-calendar');
-      const ideasView = document.getElementById('view-ideas');
-      const tabCalendar = document.getElementById('tab-calendar');
-      const tabIdeas = document.getElementById('tab-ideas');
-      const monthNav = document.getElementById('monthNav');
+   function switchView(view) {
+  const calendarView = document.getElementById('view-calendar');
+  const ideasView = document.getElementById('view-ideas');
+  const tabCalendar = document.getElementById('tab-calendar');
+  const tabIdeas = document.getElementById('tab-ideas');
+  const monthNav = document.getElementById('monthNav');
 
-      if (view === 'calendar') {
-        calendarView.style.display = 'flex';
-        ideasView.classList.remove('active');
-        tabCalendar.classList.add('active');
-        tabIdeas.classList.remove('active');
-        monthNav.classList.remove('hidden');
-      } else {
-        calendarView.style.display = 'none';
-        ideasView.classList.add('active');
-        ideasView.classList.add('active')
-        tabCalendar.classList.remove('active');
-        tabIdeas.classList.add('active');
-        monthNav.classList.add('hidden');
-        renderIdeas();
-      }
-    }
+  localStorage.setItem('lastView', view);
+
+  if (view === 'calendar') {
+    calendarView.style.display = 'flex';
+    ideasView.classList.remove('active');
+    tabCalendar.classList.add('active');
+    tabIdeas.classList.remove('active');
+    monthNav.classList.remove('hidden');
+  } else {
+    calendarView.style.display = 'none';
+    ideasView.classList.add('active');
+    tabCalendar.classList.remove('active');
+    tabIdeas.classList.add('active');
+    monthNav.classList.add('hidden');
+    renderIdeas();
+  }
+}
 
     function renderIdeas() {
       const list = document.getElementById('ideasList');
@@ -994,10 +995,15 @@ function deleteFromServer(id) {
       return div.innerHTML;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      renderCalendar();
-      if (isGasReady()) loadFromSheet();
-    });
+   document.addEventListener('DOMContentLoaded', () => {
+  renderCalendar();
+  if (isGasReady()) loadFromSheet();
+  
+  const savedView = localStorage.getItem('lastView');
+  if (savedView === 'ideas') {
+    switchView('ideas');
+  }
+});
 
     document.getElementById('modal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeModal();
