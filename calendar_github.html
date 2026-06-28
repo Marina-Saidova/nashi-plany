@@ -8,9 +8,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Наши планы</title>
 
-  <!-- ============================================ -->
-  <!-- === CSS === -->
-  <!-- ============================================ -->
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-text-size-adjust: 100%; }
 
@@ -28,7 +25,6 @@
       overflow: hidden; background: #f0f0f0;
     }
 
-    /* === ШАПКА === */
     .header {
       flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
       padding: 6px 12px;
@@ -57,7 +53,6 @@
     .btn-sync svg { width: 24px; height: 24px; pointer-events: none; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-    /* === НАВИГАЦИЯ ПО МЕСЯЦАМ === */
     .month-nav {
       flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
       padding: 6px 12px; background: #ffffff; border-bottom: 1px solid #e8e8e8; z-index: 100;
@@ -71,7 +66,6 @@
     .month-nav button:active { background: #f0f0f0; }
     .month-title { font-size: 14px; font-weight: 700; color: #333; text-transform: capitalize; }
 
-    /* === КАЛЕНДАРЬ === */
     #view-calendar {
       flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #ffffff;
     }
@@ -125,7 +119,6 @@
     .cat-other { background: #eceff1; color: #455a64; }
     .cat-custom { background: #f5f5f5; color: #666; }
 
-    /* === ИДЕИ === */
     #view-ideas { flex: 1; display: none; flex-direction: column; overflow: hidden; background: #ffffff; }
     #view-ideas.active { display: flex; }
 
@@ -164,7 +157,6 @@
     .empty-state-icon { font-size: 36px; margin-bottom: 8px; }
     .empty-state-text { font-size: 13px; font-weight: 500; }
 
-    /* === НИЖНЯЯ НАВИГАЦИЯ === */
     .bottom-nav {
       flex-shrink: 0; display: flex; justify-content: space-around; align-items: center;
       background: #ffffff; border-top: 1px solid #e8e8e8; padding: 4px 0;
@@ -179,7 +171,6 @@
     .nav-tab .icon { font-size: 18px; line-height: 1; }
     .nav-tab .label { font-size: 9px; font-weight: 600; }
 
-    /* === МОДАЛЬНОЕ ОКНО === */
     .modal-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: flex-end;
@@ -217,7 +208,6 @@
     }
     .cat-option.selected { border-color: #667eea; box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2); }
 
-    /* === ВЫБОР АВТОРА === */
     .author-options { display: flex; gap: 8px; }
     .author-option {
       flex: 1; padding: 8px; border-radius: 8px; text-align: center;
@@ -226,7 +216,6 @@
     }
     .author-option.selected { border-color: #667eea; background: #667eea; color: white; }
 
-    /* === КАСТОМНАЯ КАТЕГОРИЯ === */
     .add-category-btn {
       background: none; border: 1px dashed #667eea; color: #667eea;
       padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
@@ -247,7 +236,6 @@
     .btn-secondary { background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%) !important; }
     .btn-danger { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important; }
 
-    /* === POPUP ДНЯ === */
     .day-popup {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.4); z-index: 999; justify-content: center; align-items: center; padding: 16px;
@@ -286,7 +274,6 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
 
-    /* === ДЕСКТОП === */
     @media (min-width: 769px) {
       .header { padding: 8px 16px; padding-top: max(8px, env(safe-area-inset-top)); }
       .header h1 { font-size: 17px; }
@@ -324,20 +311,19 @@
       .modal-overlay.show .modal-sheet { transform: translateY(0) !important; }
     }
   </style>
-  <!-- === КОНЕЦ CSS === -->
 <base target="_blank">
 </head>
 <body>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.с добавлением категорий</h1>
+      <h1>📅 Hamster&Fish, v.category</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/>
-            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
-            <path d="M16 21h5v-5"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 4v6h-6"/>
+            <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/>
+            <path d="M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/>
           </svg>
         </button>
         <button class="btn-add" onclick="openModal()">+ Добавить</button>
@@ -429,8 +415,6 @@
         <label class="form-label">Место</label>
         <input type="text" class="form-input" id="inputPlace" placeholder="Например: Музей современного искусства">
       </div>
-
-      <!-- === ВЫБОР АВТОРА === -->
       <div class="form-group">
         <label class="form-label">Кто добавляет</label>
         <div class="author-options">
@@ -438,7 +422,6 @@
           <div class="author-option" data-author="Hamster" onclick="selectAuthor(this)">👤 Hamster</div>
         </div>
       </div>
-
       <div class="form-group">
         <label class="form-label">Описание / Заметки</label>
         <textarea class="form-textarea" id="inputDesc" placeholder="Дополнительные детали..."></textarea>
@@ -464,13 +447,9 @@
     </div>
   </div>
 
-  <!-- ============================================ -->
-  <!-- === JS === -->
-  <!-- ============================================ -->
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwJmh7pS1As7WqGtj0nNxj1TDIh_6uWbsCFjCpph67FtF_di28htOKa4xdsq3EyZ5mHSw/exec';
 
-    // Базовые категории
     const baseCategories = {
       excursions: { name: 'Экскурсии', class: 'cat-excursions', color: '#4caf50', bg: '#e8f5e9' },
       food: { name: 'Покушоц!', class: 'cat-food', color: '#ffc107', bg: '#fff8e1' },
@@ -480,9 +459,7 @@
       other: { name: 'Другое', class: 'cat-other', color: '#607d8b', bg: '#eceff1' }
     };
 
-    // Все категории (базовые + кастомные)
     let categories = { ...baseCategories };
-
     let currentDate = new Date();
     let selectedCategory = 'excursions';
     let selectedAuthor = 'Я';
@@ -495,14 +472,12 @@
       return GAS_URL && !GAS_URL.includes('ВСТАВЬТЕ');
     }
 
-    // === ВЫБОР АВТОРА ===
     function selectAuthor(el) {
       document.querySelectorAll('.author-option').forEach(a => a.classList.remove('selected'));
       el.classList.add('selected');
       selectedAuthor = el.dataset.author;
     }
 
-    // === КАСТОМНЫЕ КАТЕГОРИИ ===
     function showCustomCategory() {
       document.getElementById('customCategoryInput').style.display = 'block';
     }
@@ -510,37 +485,28 @@
     function addCustomCategory() {
       const name = document.getElementById('inputCustomCategory').value.trim();
       if (!name) return;
-
       const key = 'custom_' + Date.now();
-
-      // Сохранить в Google Sheets
       saveCategoryToServer(key, name);
-
-      // Добавить локально
       addCategoryToUI(key, name);
       selectCategory(document.querySelector(`[data-cat="${key}"]`));
-
       document.getElementById('customCategoryInput').style.display = 'none';
       document.getElementById('inputCustomCategory').value = '';
     }
 
     function addCategoryToUI(key, name, color) {
+      if (categories[key]) return;
       categories[key] = { 
         name: name, 
         class: 'cat-custom', 
         color: color || '#999', 
         bg: color || '#f5f5f5' 
       };
-
-      // Добавить в форму
       const div = document.createElement('div');
       div.className = 'cat-option cat-custom';
       div.dataset.cat = key;
       div.onclick = function() { selectCategory(this); };
       div.textContent = '✨ ' + name;
       document.getElementById('categoryOptions').appendChild(div);
-
-      // Добавить в фильтры
       const filterDiv = document.createElement('div');
       filterDiv.className = 'filter-chip';
       filterDiv.onclick = function() { filterIdeas(key); };
@@ -551,22 +517,28 @@
 
     function saveCategoryToServer(key, name) {
       if (!isGasReady()) return;
-
       const callbackName = 'cat_cb_' + Date.now();
       window[callbackName] = function(data) {
         delete window[callbackName];
         if (script && script.parentNode) document.head.removeChild(script);
       };
-
       const script = document.createElement('script');
       var params = [];
       params.push('action=addCategory');
       params.push('callback=' + encodeURIComponent(callbackName));
       params.push('key=' + encodeURIComponent(key));
       params.push('name=' + encodeURIComponent(name));
-
       script.src = GAS_URL + '?' + params.join('&');
       document.head.appendChild(script);
+    }
+
+    function findCategoryKeyByName(name) {
+      for (const key in categories) {
+        if (categories[key].name === name) {
+          return key;
+        }
+      }
+      return null;
     }
 
     function loadCategoriesFromSheet(cats) {
@@ -636,8 +608,8 @@
         if (e['Категория'] && catMap[e['Категория']]) {
           cat = catMap[e['Категория']];
         } else if (e['Категория']) {
-          // Кастомная категория
-          cat = e['Категория'];
+          var customKey = findCategoryKeyByName(e['Категория']);
+          cat = customKey || e['Категория'];
         }
 
         var newEvent = {
@@ -688,11 +660,12 @@
           console.error('Server error:', data.error);
           return;
         }
-        if (data.events) {
-          processSheetData(data.events);
-        }
+        // СНАЧАЛА категории, ПОТОМ события — чтобы события знали о кастомных категориях
         if (data.categories) {
           loadCategoriesFromSheet(data.categories);
+        }
+        if (data.events) {
+          processSheetData(data.events);
         }
       };
 
@@ -1057,7 +1030,9 @@
       const duplicate = checkDuplicate(title, date, editingId);
       if (duplicate) {
         const location = duplicate.date ? `на ${formatDate(duplicate.date)}` : 'во вкладке «Идеи»';
-        const msg = `Событие «${title}» уже есть ${location}.\n\nСохранить всё равно?`;
+        const msg = `Событие «${title}» уже есть ${location}.
+
+Сохранить всё равно?`;
         if (!confirm(msg)) {
           return;
         }
@@ -1186,6 +1161,5 @@
       if (e.target === e.currentTarget) closeDayPopup();
     });
   </script>
-  <!-- === КОНЕЦ JS === -->
 </body>
 </html>
