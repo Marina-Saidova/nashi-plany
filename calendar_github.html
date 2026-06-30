@@ -412,7 +412,7 @@
   <div class="category-bg" id="catBg"></div>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2276-debug</h1>
+      <h1>📅 Hamster&Fish, v.2279</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -529,6 +529,7 @@
       </div>
       <button class="btn-submit" onclick="saveEvent()" id="btnSave">Сохранить</button>
       <div class="btn-row" id="editActions" style="display:none;">
+        <button class="btn-submit btn-secondary" onclick="addToCalendar()">📅 В календарь</button>
         <button class="btn-submit btn-secondary" onclick="removeToIdeas()">Убрать в идеи</button>
         <button class="btn-submit btn-danger" onclick="deleteEvent()">Удалить</button>
       </div>
@@ -1242,13 +1243,12 @@
       const list = document.getElementById('ideasList');
       const ideas = events.filter(e => !e.date || e.date === '');
 
-      // Управляем фоном
+      // Фон для категорий
       const bg = document.getElementById('catBg');
-      bg.classList.remove('show', 'bg-food', 'bg-excursions');
-      if (currentFilter === 'food') {
-        bg.classList.add('show', 'bg-food');
-      } else if (currentFilter === 'excursions') {
-        bg.classList.add('show', 'bg-excursions');
+      if (bg) {
+        bg.classList.remove('show', 'bg-food', 'bg-excursions');
+        if (currentFilter === 'food') bg.classList.add('show', 'bg-food');
+        else if (currentFilter === 'excursions') bg.classList.add('show', 'bg-excursions');
       }
 
       if (currentFilter !== 'all') {
@@ -1467,6 +1467,46 @@
       renderCalendar();
       if (document.getElementById('view-ideas').classList.contains('active')) {
         renderIdeas();
+      }
+    }
+
+    function addToCalendar() {
+      if (!editingId) return;
+      const ev = events.find(e => String(e.id) === String(editingId));
+      if (!ev) return;
+
+      const date = document.getElementById('inputDate').value;
+      if (!date) {
+        alert('Сначала выберите дату');
+        return;
+      }
+
+      const time = document.getElementById('inputTime').value;
+      const timeEnd = document.getElementById('inputTimeEnd').value;
+      const place = document.getElementById('inputPlace').value.trim();
+
+      // Создаём копию в календаре
+      const calendarEvent = {
+        id: Date.now(),
+        title: ev.title,
+        date: date,
+        time: time,
+        timeEnd: timeEnd,
+        place: place,
+        author: selectedAuthor,
+        category: ev.category,
+        desc: ev.desc
+      };
+      events.push(calendarEvent);
+      saveToServer(calendarEvent);
+
+      // Идея остаётся без изменений
+      closeModal();
+      renderCalendar();
+      if (document.getElementById('view-ideas').classList.contains('active')) {
+        renderIdeas();
+      } else {
+        switchView('calendar');
       }
     }
 
