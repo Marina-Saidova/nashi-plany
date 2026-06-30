@@ -400,7 +400,7 @@
   <div class="category-bg" id="catBg"></div>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2280</h1>
+      <h1>📅 Hamster&Fish, v.2281</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1207,12 +1207,14 @@
 
       if (view === 'calendar') {
         calendarView.style.display = 'flex';
+        ideasView.style.display = 'none';
         ideasView.classList.remove('active');
         tabCalendar.classList.add('active');
         tabIdeas.classList.remove('active');
         monthNav.classList.remove('hidden');
       } else {
         calendarView.style.display = 'none';
+        ideasView.style.display = 'flex';
         ideasView.classList.add('active');
         tabCalendar.classList.remove('active');
         tabIdeas.classList.add('active');
