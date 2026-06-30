@@ -401,7 +401,7 @@
   <div class="category-bg" id="catBg"></div>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2287-debug</h1>
+      <h1>📅 Hamster&Fish, v.2289-debug</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1076,7 +1076,9 @@
       params.push('author=' + encodeURIComponent(ev.author || 'Я'));
       params.push('desc=' + encodeURIComponent(ev.desc || ''));
 
-      script.src = GAS_URL + '?' + params.join('&');
+      var url = GAS_URL + '?' + params.join('&');
+      console.log('saveToServer URL:', url.substring(0, 200) + '...');
+      script.src = url;
       script.onerror = function() {
         delete window[callbackName];
         if (script.parentNode) document.head.removeChild(script);
