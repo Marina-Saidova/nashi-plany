@@ -401,7 +401,7 @@
   <div class="category-bg" id="catBg"></div>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2294</h1>
+      <h1>📅 Hamster&Fish, v.2295</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1336,8 +1336,8 @@
 
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'none';
-      document.getElementById('saveButtons').style.display = 'block';
-      document.getElementById('btnSaveEdit').style.display = 'none';
+      document.getElementById('newEventButtons').style.display = 'block';
+      document.getElementById('btnSave').style.display = 'none';
     }
 
     function openEditModal(ev) {
@@ -1358,8 +1358,8 @@
 
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'flex';
-      document.getElementById('saveButtons').style.display = 'none';
-      document.getElementById('btnSaveEdit').style.display = 'block';
+      document.getElementById('newEventButtons').style.display = 'none';
+      document.getElementById('btnSave').style.display = 'block';
     }
 
     function openEditModalById(id) {
