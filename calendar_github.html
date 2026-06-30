@@ -57,9 +57,17 @@
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     .month-nav {
-      flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
-      padding: 6px 12px; background: #ffffff; border-bottom: 1px solid #e8e8e8; z-index: 100;
-      min-height: 36px;
+      flex-shrink: 0; display: flex; justify-content: center; align-items: center; gap: 16px;
+      padding: 8px 12px; background: #ffffff; border-bottom: 1px solid #e8e8e8; z-index: 100;
+      min-height: 40px;
+    }
+    .nav-arrow {
+      background: none; border: none; color: #667eea; font-size: 16px; cursor: pointer;
+      padding: 4px 8px; border-radius: 6px; transition: background 0.2s;
+    }
+    .nav-arrow:hover { background: #f0f0f0; }
+    @media (max-width: 768px) {
+      .nav-arrow { display: none; }
     }
     .month-nav.hidden { display: none; }
     .month-nav button {
@@ -110,29 +118,55 @@
 
     /* === ВИД НЕДЕЛЯ === */
     .week-view {
-      display: flex; flex-direction: column; padding: 8px; gap: 8px; overflow-y: auto;
+      display: flex; flex-direction: column; overflow: hidden;
     }
-    .week-day-card {
-      background: white; border-radius: 10px; padding: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer;
-      transition: background 0.15s;
+    .week-header {
+      display: flex; flex-shrink: 0; border-bottom: 1px solid #e8e8e8; background: #fafafa;
     }
-    .week-day-card:hover { background: #f8f9ff; }
-    .week-day-card:active { background: #f0f0f0; }
-    .week-day-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+    .week-header-time {
+      width: 50px; flex-shrink: 0; border-right: 1px solid #e8e8e8;
     }
-    .week-day-name { font-size: 13px; font-weight: 700; color: #333; }
-    .week-day-number {
-      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-      border-radius: 50%; font-size: 13px; font-weight: 700;
+    .week-header-days {
+      flex: 1; display: grid; grid-template-columns: repeat(7, 1fr);
     }
-    .week-day-number.today { background: #667eea; color: white; }
-    .week-day-events { display: flex; flex-direction: column; gap: 4px; }
-    .week-event-chip {
-      font-size: 11px; padding: 4px 8px; border-radius: 6px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    .week-header-day {
+      text-align: center; padding: 8px 4px; border-right: 1px solid #e8e8e8;
+      font-size: 11px; font-weight: 600; color: #333;
     }
+    .week-header-day.weekend { color: #e74c3c; }
+    .week-header-day.today { background: #e8f4fd; }
+    .week-header-day .day-num { font-size: 14px; font-weight: 700; }
+
+    .week-body {
+      flex: 1; display: flex; overflow-y: auto;
+    }
+    .week-time-column {
+      width: 50px; flex-shrink: 0; border-right: 1px solid #e8e8e8;
+    }
+    .week-time-slot {
+      height: 48px; border-bottom: 1px solid #f0f0f0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: #999;
+    }
+    .week-days-grid {
+      flex: 1; display: grid; grid-template-columns: repeat(7, 1fr);
+      position: relative;
+    }
+    .week-day-column {
+      border-right: 1px solid #f0f0f0; position: relative;
+    }
+    .week-day-column:last-child { border-right: none; }
+    .week-grid-line {
+      height: 48px; border-bottom: 1px solid #f5f5f5;
+    }
+    .week-event-block {
+      position: absolute; left: 2px; right: 2px;
+      border-radius: 4px; padding: 2px 4px;
+      font-size: 9px; overflow: hidden;
+      cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .week-event-block .ev-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .week-event-block .ev-time { font-size: 8px; opacity: 0.8; }
 
     #view-calendar {
       flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #ffffff;
@@ -152,7 +186,7 @@
     .week-row:last-child { border-bottom: none; }
 
     .day-cell {
-      border-right: 1px solid #f0f0f0; padding: 4px 3px; min-height: 60px;
+      border-right: 1px solid #f0f0f0; padding: 4px 3px;
       display: flex; flex-direction: column; overflow: hidden; cursor: pointer;
       transition: background 0.3s; position: relative;
     }
@@ -255,17 +289,27 @@
     .empty-state-text { font-size: 13px; font-weight: 500; }
 
     .bottom-nav {
-      flex-shrink: 0; display: flex; justify-content: center; align-items: center; gap: 40px;
-      background: #ffffff; border-top: 1px solid #e8e8e8; padding: 8px 0;
+      flex-shrink: 0; display: flex; justify-content: space-around; align-items: center;
+      background: #ffffff; border-top: 1px solid #e8e8e8; padding: 8px 12px;
       padding-bottom: max(8px, env(safe-area-inset-bottom)); z-index: 100;
       min-height: 56px;
     }
+    .bottom-nav .view-toggle {
+      display: flex; gap: 2px; background: #f5f5f5; padding: 2px; border-radius: 8px;
+    }
+    .bottom-nav .view-toggle button {
+      font-size: 10px; padding: 4px 8px; border-radius: 6px;
+      background: none; color: #666; border: none; cursor: pointer;
+    }
+    .bottom-nav .view-toggle button.active {
+      background: white; color: #667eea; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
     .bottom-nav .btn-sync {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white; width: 44px; height: 44px;
+      color: white; width: 40px; height: 40px;
       box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
     }
-    .bottom-nav .btn-sync svg { width: 24px; height: 24px; stroke: white; }
+    .bottom-nav .btn-sync svg { width: 20px; height: 20px; stroke: white; }
     .nav-tab {
       display: flex; flex-direction: column; align-items: center; gap: 4px;
       background: none; border: none; padding: 8px 24px; cursor: pointer;
@@ -497,14 +541,9 @@
     </div>
 
     <div class="month-nav" id="monthNav">
-      <button onclick="navPrev()">◀ Назад</button>
+      <button class="nav-arrow" onclick="navPrev()">◀</button>
       <div class="month-title" id="monthTitle">Июнь 2026</div>
-      <button onclick="navNext()">Вперед ▶</button>
-      <div class="view-toggle">
-        <button onclick="setCalendarView('year')" id="view-year">Год</button>
-        <button onclick="setCalendarView('month')" id="view-month" class="active">Месяц</button>
-        <button onclick="setCalendarView('week')" id="view-week">Неделя</button>
-      </div>
+      <button class="nav-arrow" onclick="navNext()">▶</button>
     </div>
 
 <!-- swipe indicators removed -->
@@ -543,6 +582,11 @@
         <span class="icon">📅</span>
         <span class="label">Календарь</span>
       </button>
+      <div class="view-toggle">
+        <button onclick="setCalendarView('year')" id="view-year">Год</button>
+        <button onclick="setCalendarView('month')" id="view-month" class="active">Мес</button>
+        <button onclick="setCalendarView('week')" id="view-week">Нед</button>
+      </div>
       <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M23 4v6h-6"/>
@@ -1743,7 +1787,7 @@
       const container = document.getElementById('yearView');
       container.innerHTML = '';
 
-      const monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+      const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
       const today = new Date();
       const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 
@@ -1807,7 +1851,6 @@
       const today = new Date();
       const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 
-      // Начало недели (понедельник)
       const weekStart = new Date(currentWeekStart);
       const dayOfWeek = (weekStart.getDay() + 6) % 7;
       weekStart.setDate(weekStart.getDate() - dayOfWeek);
@@ -1823,58 +1866,115 @@
       const container = document.getElementById('weekView');
       container.innerHTML = '';
 
-      const dayNames = ['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+      const dayNames = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+      // Заголовок
+      const header = document.createElement('div');
+      header.className = 'week-header';
+
+      const timeCorner = document.createElement('div');
+      timeCorner.className = 'week-header-time';
+      header.appendChild(timeCorner);
+
+      const daysHeader = document.createElement('div');
+      daysHeader.className = 'week-header-days';
 
       for (let i = 0; i < 7; i++) {
         const date = new Date(weekStart);
         date.setDate(date.getDate() + i);
         const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 
-        const dayCard = document.createElement('div');
-        dayCard.className = 'week-day-card';
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'week-header-day';
+        if (i >= 5) dayHeader.classList.add('weekend');
+        if (dateStr === todayStr) dayHeader.classList.add('today');
+        dayHeader.innerHTML = `${dayNames[i]}<div class="day-num">${date.getDate()}</div>`;
+        daysHeader.appendChild(dayHeader);
+      }
+      header.appendChild(daysHeader);
+      container.appendChild(header);
 
-        const header = document.createElement('div');
-        header.className = 'week-day-header';
+      // Тело с временной шкалой
+      const body = document.createElement('div');
+      body.className = 'week-body';
 
-        const name = document.createElement('span');
-        name.className = 'week-day-name';
-        name.textContent = dayNames[i];
+      // Временная колонка
+      const timeColumn = document.createElement('div');
+      timeColumn.className = 'week-time-column';
+      for (let h = 0; h < 24; h++) {
+        const slot = document.createElement('div');
+        slot.className = 'week-time-slot';
+        slot.textContent = `${String(h).padStart(2,'0')}:00`;
+        timeColumn.appendChild(slot);
+      }
+      body.appendChild(timeColumn);
 
-        const num = document.createElement('span');
-        num.className = 'week-day-number';
-        num.textContent = date.getDate();
-        if (dateStr === todayStr) num.classList.add('today');
+      // Колонки дней
+      const daysGrid = document.createElement('div');
+      daysGrid.className = 'week-days-grid';
 
-        header.appendChild(name);
-        header.appendChild(num);
-        dayCard.appendChild(header);
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 
-        const eventsContainer = document.createElement('div');
-        eventsContainer.className = 'week-day-events';
+        const dayColumn = document.createElement('div');
+        dayColumn.className = 'week-day-column';
 
-        const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
-
-        if (dayEvents.length === 0) {
-          const empty = document.createElement('div');
-          empty.style.cssText = 'color: #ccc; font-size: 12px; padding: 8px 0;';
-          empty.textContent = 'Нет событий';
-          eventsContainer.appendChild(empty);
-        } else {
-          dayEvents.forEach(ev => {
-            const cat = categories[ev.category] || categories.other;
-            const chip = document.createElement('div');
-            chip.className = `week-event-chip ${cat.class}`;
-            chip.textContent = ev.time ? `${ev.time} ${ev.title}` : ev.title;
-            chip.onclick = (e) => { e.stopPropagation(); openEditModalById(ev.id); };
-            eventsContainer.appendChild(chip);
-          });
+        // Сетка часов
+        for (let h = 0; h < 24; h++) {
+          const line = document.createElement('div');
+          line.className = 'week-grid-line';
+          dayColumn.appendChild(line);
         }
 
-        dayCard.appendChild(eventsContainer);
-        dayCard.onclick = () => openDayPopup(dateStr, date.getDate(), ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][date.getMonth()]);
+        // События
+        const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+        dayEvents.forEach(ev => {
+          const cat = categories[ev.category] || categories.other;
+          const block = document.createElement('div');
+          block.className = 'week-event-block';
+          block.style.background = cat.bg;
+          block.style.color = cat.color;
+          block.style.borderLeft = `3px solid ${cat.color}`;
 
-        container.appendChild(dayCard);
+          // Позиция по времени
+          if (ev.time) {
+            const [hours, mins] = ev.time.split(':').map(Number);
+            const top = hours * 48 + (mins / 60) * 48;
+            block.style.top = `${top}px`;
+
+            // Высота по длительности
+            if (ev.timeEnd) {
+              const [endH, endM] = ev.timeEnd.split(':').map(Number);
+              const duration = (endH * 60 + endM) - (hours * 60 + mins);
+              block.style.height = `${Math.max(duration / 60 * 48, 20)}px`;
+            } else {
+              block.style.height = '44px';
+            }
+          } else {
+            block.style.top = '0px';
+            block.style.height = '44px';
+          }
+
+          block.innerHTML = `<div class="ev-title">${ev.title}</div>${ev.time ? `<div class="ev-time">${ev.time}</div>` : ''}`;
+          block.onclick = (e) => { e.stopPropagation(); openEditModalById(ev.id); };
+          dayColumn.appendChild(block);
+        });
+
+        // Клик по пустой колонке
+        dayColumn.onclick = (e) => {
+          if (e.target === dayColumn) {
+            selectedDate = dateStr;
+            openModal();
+          }
+        };
+
+        daysGrid.appendChild(dayColumn);
       }
+
+      body.appendChild(daysGrid);
+      container.appendChild(body);
     }
 
     /* openModalForDate removed - now handled by cell.onclick */
