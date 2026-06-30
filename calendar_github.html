@@ -1411,6 +1411,8 @@
       const tabCalendar = document.getElementById('tab-calendar');
       const tabIdeas = document.getElementById('tab-ideas');
       const monthNav = document.getElementById('monthNav');
+      const headerAddBtn = document.getElementById('headerAddBtn');
+      const viewBar = document.getElementById('viewBar');
 
       localStorage.setItem('lastView', view);
 
@@ -1420,6 +1422,8 @@
         tabCalendar.classList.add('active');
         tabIdeas.classList.remove('active');
         monthNav.classList.remove('hidden');
+        if (headerAddBtn) headerAddBtn.style.display = 'none';
+        if (viewBar) viewBar.style.display = 'flex';
       } else {
         calendarView.classList.add('hidden');
         ideasView.classList.add('active');
@@ -1427,6 +1431,8 @@
         tabIdeas.classList.add('active');
         monthNav.classList.add('hidden');
         renderIdeas();
+        if (headerAddBtn) headerAddBtn.style.display = 'block';
+        if (viewBar) viewBar.style.display = 'none';
       }
     }
 
