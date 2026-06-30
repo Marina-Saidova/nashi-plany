@@ -342,20 +342,8 @@
       background: rgba(255,255,255,0.75);
     }
 
-    /* === СВАЙП МЕЖДУ ВКЛАДКАМИ === */
-    .views-container {
-      flex: 1; display: flex; overflow: hidden; position: relative;
-    }
-    .view-slide {
-      flex: 0 0 100%; width: 100%; height: 100%;
-      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-    }
-    .view-slide.active { transform: translateX(0); }
-    .view-slide.next { transform: translateX(100%); position: absolute; top: 0; left: 0; }
-    .view-slide.prev { transform: translateX(-100%); position: absolute; top: 0; left: 0; }
-
     .swipe-indicator {
-      position: absolute; top: 50%; transform: translateY(-50%);
+      position: fixed; top: 50%; transform: translateY(-50%);
       width: 40px; height: 40px; border-radius: 50%;
       background: rgba(102, 126, 234, 0.15); color: #667eea;
       display: flex; align-items: center; justify-content: center;
@@ -412,7 +400,7 @@
   <div class="category-bg" id="catBg"></div>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2279</h1>
+      <h1>📅 Hamster&Fish, v.2280</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -432,34 +420,32 @@
       <button onclick="nextMonth()">Вперед ▶</button>
     </div>
 
-    <div class="views-container" id="viewsContainer">
-      <div class="swipe-indicator left" id="swipeLeft">◀</div>
-      <div class="swipe-indicator right" id="swipeRight">▶</div>
+    <div class="swipe-indicator left" id="swipeLeft">◀</div>
+    <div class="swipe-indicator right" id="swipeRight">▶</div>
 
-      <div class="view-slide active" id="view-calendar">
-        <div class="weekdays-header">
-          <div class="weekday-label">Пн</div>
-          <div class="weekday-label">Вт</div>
-          <div class="weekday-label">Ср</div>
-          <div class="weekday-label">Чт</div>
-          <div class="weekday-label">Пт</div>
-          <div class="weekday-label weekend">Сб</div>
-          <div class="weekday-label weekend">Вс</div>
-        </div>
-        <div class="calendar-body" id="calendarBody"></div>
+    <div id="view-calendar">
+      <div class="weekdays-header">
+        <div class="weekday-label">Пн</div>
+        <div class="weekday-label">Вт</div>
+        <div class="weekday-label">Ср</div>
+        <div class="weekday-label">Чт</div>
+        <div class="weekday-label">Пт</div>
+        <div class="weekday-label weekend">Сб</div>
+        <div class="weekday-label weekend">Вс</div>
       </div>
+      <div class="calendar-body" id="calendarBody"></div>
+    </div>
 
-      <div class="view-slide next" id="view-ideas">
-        <div class="ideas-filter" id="ideasFilter">
-          <div class="filter-chip active" onclick="filterIdeas('all')" data-filter="all">Все</div>
-          <div class="filter-chip" onclick="filterIdeas('excursions')" data-filter="excursions">Экскурсии</div>
-          <div class="filter-chip" onclick="filterIdeas('food')" data-filter="food">Покушоц!</div>
-          <div class="filter-chip" onclick="filterIdeas('exhibitions')" data-filter="exhibitions">Выставки</div>
-          <div class="filter-chip" onclick="filterIdeas('concerts')" data-filter="concerts">Концерты</div>
-          <div class="filter-chip" onclick="filterIdeas('movies')" data-filter="movies">Кино</div>
-        </div>
-        <div class="ideas-list" id="ideasList"></div>
+    <div id="view-ideas">
+      <div class="ideas-filter" id="ideasFilter">
+        <div class="filter-chip active" onclick="filterIdeas('all')" data-filter="all">Все</div>
+        <div class="filter-chip" onclick="filterIdeas('excursions')" data-filter="excursions">Экскурсии</div>
+        <div class="filter-chip" onclick="filterIdeas('food')" data-filter="food">Покушоц!</div>
+        <div class="filter-chip" onclick="filterIdeas('exhibitions')" data-filter="exhibitions">Выставки</div>
+        <div class="filter-chip" onclick="filterIdeas('concerts')" data-filter="concerts">Концерты</div>
+        <div class="filter-chip" onclick="filterIdeas('movies')" data-filter="movies">Кино</div>
       </div>
+      <div class="ideas-list" id="ideasList"></div>
     </div>
 
     <div class="bottom-nav">
@@ -1210,7 +1196,7 @@
       renderCalendar();
     }
 
-    function switchView(view, animate) {
+    function switchView(view) {
       const calendarView = document.getElementById('view-calendar');
       const ideasView = document.getElementById('view-ideas');
       const tabCalendar = document.getElementById('tab-calendar');
@@ -1220,17 +1206,13 @@
       localStorage.setItem('lastView', view);
 
       if (view === 'calendar') {
-        calendarView.classList.remove('next', 'prev');
-        calendarView.classList.add('active');
+        calendarView.style.display = 'flex';
         ideasView.classList.remove('active');
-        ideasView.classList.add('next');
         tabCalendar.classList.add('active');
         tabIdeas.classList.remove('active');
         monthNav.classList.remove('hidden');
       } else {
-        calendarView.classList.remove('active');
-        calendarView.classList.add('prev');
-        ideasView.classList.remove('next', 'prev');
+        calendarView.style.display = 'none';
         ideasView.classList.add('active');
         tabCalendar.classList.remove('active');
         tabIdeas.classList.add('active');
