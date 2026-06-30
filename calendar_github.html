@@ -30,12 +30,12 @@
 
     .header {
       flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
-      padding: 6px 12px;
-      padding-top: max(6px, env(safe-area-inset-top));
+      padding: 4px 12px;
+      padding-top: max(4px, env(safe-area-inset-top));
       background: #ffffff; border-bottom: 1px solid #e8e8e8; z-index: 100;
-      min-height: 44px;
+      min-height: 40px;
     }
-    .header h1 { font-size: 16px; font-weight: 700; color: #333; }
+    .header h1 { display: none; }
     .header-actions { display: flex; gap: 6px; align-items: center; }
 
     .btn-add {
@@ -47,13 +47,13 @@
     }
     .btn-add:active { transform: scale(0.95); }
     .btn-sync {
-      background: none; color: #667eea; border: none; width: 40px; height: 40px;
+      background: none; color: #667eea; border: none; width: 48px; height: 48px;
       border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: transform 0.2s; flex-shrink: 0; padding: 0;
     }
     .btn-sync:active { transform: scale(0.95); }
     .btn-sync.spin { animation: spin 1s linear infinite; }
-    .btn-sync svg { width: 24px; height: 24px; pointer-events: none; }
+    .btn-sync svg { width: 28px; height: 28px; pointer-events: none; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     .month-nav {
@@ -87,9 +87,24 @@
     .week-row:last-child { border-bottom: none; }
 
     .day-cell {
-      border-right: 1px solid #f0f0f0; padding: 3px 2px; min-height: 0;
+      border-right: 1px solid #f0f0f0; padding: 4px 3px; min-height: 60px;
       display: flex; flex-direction: column; overflow: hidden; cursor: pointer;
       transition: background 0.15s; position: relative;
+    }
+    .day-cell .day-add-btn {
+      position: absolute; bottom: 2px; right: 2px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white; border: none; font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: 0; transition: opacity 0.2s;
+      line-height: 1; padding: 0;
+    }
+    .day-cell:hover .day-add-btn, .day-cell:active .day-add-btn {
+      opacity: 1;
+    }
+    @media (min-width: 769px) {
+      .day-cell .day-add-btn { width: 24px; height: 24px; font-size: 16px; }
     }
     .day-cell:last-child { border-right: none; }
     .day-cell:active { background: #f5f5f5; }
@@ -98,9 +113,9 @@
     .day-cell.today { background: #e8f4fd; }
 
     .day-number {
-      font-size: 12px; font-weight: 700; color: #333; width: 22px; height: 22px;
+      font-size: 13px; font-weight: 700; color: #333; width: 24px; height: 24px;
       display: flex; align-items: center; justify-content: center; border-radius: 50%;
-      margin-bottom: 1px; flex-shrink: 0;
+      margin-bottom: 2px; flex-shrink: 0;
     }
     .day-cell.today .day-number { background: #667eea; color: white; }
     .day-cell.weekend .day-number { color: #e74c3c; }
@@ -110,7 +125,7 @@
       flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1px; min-height: 0;
     }
     .event-chip {
-      font-size: 9px; padding: 2px 4px; border-radius: 3px; overflow: hidden;
+      font-size: 10px; padding: 3px 5px; border-radius: 3px; overflow: hidden;
       text-overflow: ellipsis; cursor: pointer; line-height: 1.35;
       display: flex; flex-direction: column; gap: 1px;
     }
@@ -167,18 +182,25 @@
     .empty-state-text { font-size: 13px; font-weight: 500; }
 
     .bottom-nav {
-      flex-shrink: 0; display: flex; justify-content: space-around; align-items: center;
-      background: #ffffff; border-top: 1px solid #e8e8e8; padding: 4px 0;
-      padding-bottom: max(4px, env(safe-area-inset-bottom)); z-index: 100;
+      flex-shrink: 0; display: flex; justify-content: center; align-items: center; gap: 40px;
+      background: #ffffff; border-top: 1px solid #e8e8e8; padding: 8px 0;
+      padding-bottom: max(8px, env(safe-area-inset-bottom)); z-index: 100;
+      min-height: 56px;
     }
+    .bottom-nav .btn-sync {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white; width: 44px; height: 44px;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    }
+    .bottom-nav .btn-sync svg { width: 24px; height: 24px; stroke: white; }
     .nav-tab {
-      display: flex; flex-direction: column; align-items: center; gap: 2px;
-      background: none; border: none; padding: 5px 20px; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: none; border: none; padding: 8px 24px; cursor: pointer;
       color: #aaa; transition: color 0.2s; touch-action: manipulation;
     }
     .nav-tab.active { color: #667eea; }
-    .nav-tab .icon { font-size: 18px; line-height: 1; }
-    .nav-tab .label { font-size: 9px; font-weight: 600; }
+    .nav-tab .icon { font-size: 22px; line-height: 1; }
+    .nav-tab .label { font-size: 11px; font-weight: 600; }
 
     .modal-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -343,16 +365,7 @@
       background: rgba(255,255,255,0.75);
     }
 
-    .swipe-indicator {
-      position: fixed; top: 50%; transform: translateY(-50%);
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(102, 126, 234, 0.15); color: #667eea;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 50;
-    }
-    .swipe-indicator.show { opacity: 1; }
-    .swipe-indicator.left { left: 8px; }
-    .swipe-indicator.right { right: 8px; }
+    /* swipe indicators removed */
 
     @media (min-width: 769px) {
       .header { padding: 8px 16px; padding-top: max(8px, env(safe-area-inset-top)); }
@@ -404,17 +417,8 @@
   <div class="category-bg" id="catBg"></div>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2297</h1>
+      <div style="width: 40px;"></div>
       <div class="header-actions">
-        <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M23 4v6h-6"/>
-            <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/>
-            <path d="M1 20v-6h6"/>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/>
-          </svg>
-        </button>
-        <button class="btn-add" onclick="openModal()">+ Добавить</button>
       </div>
     </div>
 
@@ -424,8 +428,7 @@
       <button onclick="nextMonth()">Вперед ▶</button>
     </div>
 
-    <div class="swipe-indicator left" id="swipeLeft">◀</div>
-    <div class="swipe-indicator right" id="swipeRight">▶</div>
+<!-- swipe indicators removed -->
 
     <div id="view-calendar">
       <div class="weekdays-header">
@@ -456,6 +459,14 @@
       <button class="nav-tab active" onclick="switchView('calendar')" id="tab-calendar">
         <span class="icon">📅</span>
         <span class="label">Календарь</span>
+      </button>
+      <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6"/>
+          <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/>
+          <path d="M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/>
+        </svg>
       </button>
       <button class="nav-tab" onclick="switchView('ideas')" id="tab-ideas">
         <span class="icon">💡</span>
@@ -1184,6 +1195,7 @@
             cell.innerHTML = `
               <div class="day-number">${currentDay}</div>
               <div class="day-events">${eventsHtml}</div>
+              <button class="day-add-btn" onclick="event.stopPropagation(); openModalForDate('${dateStr}')">+</button>
             `;
             cell.onclick = () => openDayPopup(dateStr, dayNum, monthNameCap);
           }
@@ -1588,6 +1600,11 @@
 
     function addEventForDay() {
       closeDayPopup();
+      openModal();
+    }
+
+    function openModalForDate(dateStr) {
+      selectedDate = dateStr;
       openModal();
     }
 
