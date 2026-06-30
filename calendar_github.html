@@ -401,7 +401,7 @@
   <div class="category-bg" id="catBg"></div>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2291</h1>
+      <h1>📅 Hamster&Fish, v.2293</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -514,8 +514,11 @@
         <label class="form-label">Описание / Заметки</label>
         <textarea class="form-textarea" id="inputDesc" placeholder="Дополнительные детали..."></textarea>
       </div>
-      <button class="btn-submit" onclick="saveEvent('idea')" id="btnSaveIdea">💡 Сохранить как идею</button>
-      <button class="btn-submit btn-secondary" onclick="saveEvent('calendar')" id="btnSaveCalendar" style="margin-top:8px;">📅 Сохранить в календарь</button>
+      <div id="newEventButtons">
+        <button class="btn-submit" onclick="saveEvent('idea')" id="btnSaveIdea">💡 Сохранить как идею</button>
+        <button class="btn-submit btn-secondary" onclick="saveEvent('calendar')" id="btnSaveCalendar" style="margin-top:8px;">📅 Сохранить в календарь</button>
+      </div>
+      <button class="btn-submit" onclick="saveEvent()" id="btnSave" style="display:none;">Сохранить изменения</button>
       <div class="btn-row" id="editActions" style="display:none;">
         <button class="btn-submit btn-secondary" onclick="addToCalendar()">📅 В календарь</button>
         <button class="btn-submit btn-secondary" onclick="removeToIdeas()">Убрать в идеи</button>
@@ -1333,7 +1336,10 @@
 
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'none';
-      document.getElementById('btnSave').textContent = 'Сохранить';
+
+      // Показываем кнопки для нового события
+      document.getElementById('newEventButtons').style.display = 'block';
+      document.getElementById('btnSave').style.display = 'none';
     }
 
     function openEditModal(ev) {
@@ -1354,7 +1360,10 @@
 
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'flex';
-      document.getElementById('btnSave').textContent = 'Сохранить изменения';
+
+      // Скрываем кнопки нового события, показываем кнопку сохранения
+      document.getElementById('newEventButtons').style.display = 'none';
+      document.getElementById('btnSave').style.display = 'block';
     }
 
     function openEditModalById(id) {
