@@ -69,6 +69,71 @@
     .month-nav button:active { background: #f0f0f0; }
     .month-title { font-size: 14px; font-weight: 700; color: #333; text-transform: capitalize; }
 
+    .view-toggle {
+      display: flex; gap: 4px; background: #f5f5f5; padding: 2px; border-radius: 8px;
+    }
+    .view-toggle button {
+      font-size: 11px; padding: 4px 10px; border-radius: 6px;
+      background: none; color: #666;
+    }
+    .view-toggle button.active {
+      background: white; color: #667eea; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* === ВИД ГОД === */
+    .year-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      padding: 8px; overflow-y: auto;
+    }
+    .year-grid .month-block {
+      background: white; border-radius: 8px; padding: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .year-grid .month-block-title {
+      font-size: 12px; font-weight: 700; color: #333; text-align: center; margin-bottom: 4px;
+    }
+    .year-grid .mini-weekdays {
+      display: grid; grid-template-columns: repeat(7, 1fr); text-align: center;
+      font-size: 8px; color: #999; margin-bottom: 2px;
+    }
+    .year-grid .mini-days {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px;
+    }
+    .year-grid .mini-day {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      font-size: 9px; border-radius: 3px; cursor: pointer;
+    }
+    .year-grid .mini-day:hover { background: #e8f4fd; }
+    .year-grid .mini-day.today { background: #667eea; color: white; }
+    .year-grid .mini-day.has-event { background: #e8f5e9; }
+    .year-grid .mini-day.other-month { color: #ddd; }
+
+    /* === ВИД НЕДЕЛЯ === */
+    .week-view {
+      display: flex; flex-direction: column; padding: 8px; gap: 8px; overflow-y: auto;
+    }
+    .week-day-card {
+      background: white; border-radius: 10px; padding: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer;
+      transition: background 0.15s;
+    }
+    .week-day-card:hover { background: #f8f9ff; }
+    .week-day-card:active { background: #f0f0f0; }
+    .week-day-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+    }
+    .week-day-name { font-size: 13px; font-weight: 700; color: #333; }
+    .week-day-number {
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; font-size: 13px; font-weight: 700;
+    }
+    .week-day-number.today { background: #667eea; color: white; }
+    .week-day-events { display: flex; flex-direction: column; gap: 4px; }
+    .week-event-chip {
+      font-size: 11px; padding: 4px 8px; border-radius: 6px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
     #view-calendar {
       flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #ffffff;
     }
@@ -89,22 +154,22 @@
     .day-cell {
       border-right: 1px solid #f0f0f0; padding: 4px 3px; min-height: 60px;
       display: flex; flex-direction: column; overflow: hidden; cursor: pointer;
-      transition: background 0.15s; position: relative;
+      transition: background 0.3s; position: relative;
     }
-    .day-cell .day-add-btn {
-      position: absolute; bottom: 2px; right: 2px;
-      width: 20px; height: 20px; border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white; border: none; font-size: 14px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; opacity: 0; transition: opacity 0.2s;
-      line-height: 1; padding: 0;
+    .day-cell:hover, .day-cell:active {
+      background: rgba(102, 126, 234, 0.15);
     }
-    .day-cell:hover .day-add-btn, .day-cell:active .day-add-btn {
-      opacity: 1;
+    .day-cell .day-add-hint {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 32px; color: #667eea; opacity: 0; transition: opacity 0.3s;
+      pointer-events: none; font-weight: 300;
+    }
+    .day-cell:hover .day-add-hint, .day-cell:active .day-add-hint {
+      opacity: 0.4;
     }
     @media (min-width: 769px) {
-      .day-cell .day-add-btn { width: 24px; height: 24px; font-size: 16px; }
+      .day-cell .day-add-hint { font-size: 40px; }
     }
     .day-cell:last-child { border-right: none; }
     .day-cell:active { background: #f5f5f5; }
@@ -154,8 +219,16 @@
       flex-shrink: 0; padding: 5px 10px; border-radius: 14px; font-size: 11px; font-weight: 600;
       cursor: pointer; border: 2px solid transparent; transition: all 0.2s; background: white; touch-action: manipulation;
     }
-    .filter-chip.active { border-color: #667eea; background: #667eea; color: white; }
+    .filter-chip.active { border-color: #667eea; background: #667eea; color: white !important; }
     .filter-chip:not(.active) { border-color: #e0e0e0; color: #666; }
+
+    /* Цветные фильтры по категориям */
+    .filter-chip[data-filter="excursions"] { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+    .filter-chip[data-filter="food"] { background: #fff8e1; color: #f57f17; border-color: #ffe082; }
+    .filter-chip[data-filter="exhibitions"] { background: #e3f2fd; color: #1565c0; border-color: #90caf9; }
+    .filter-chip[data-filter="concerts"] { background: #fce4ec; color: #c62828; border-color: #f48fb1; }
+    .filter-chip[data-filter="movies"] { background: #f3e5f5; color: #6a1b9a; border-color: #ce93d8; }
+    .filter-chip[data-filter="all"] { background: #f5f5f5; color: #666; border-color: #e0e0e0; }
 
     .ideas-list { flex: 1; overflow-y: auto; padding: 8px 12px; -webkit-overflow-scrolling: touch; }
     .idea-card {
@@ -419,28 +492,38 @@
     <div class="header">
       <div style="width: 40px;"></div>
       <div class="header-actions">
+        <button class="btn-add" onclick="openModal()" id="headerAddBtn" style="display: none;">+ Добавить</button>
       </div>
     </div>
 
     <div class="month-nav" id="monthNav">
-      <button onclick="prevMonth()">◀ Назад</button>
+      <button onclick="navPrev()">◀ Назад</button>
       <div class="month-title" id="monthTitle">Июнь 2026</div>
-      <button onclick="nextMonth()">Вперед ▶</button>
+      <button onclick="navNext()">Вперед ▶</button>
+      <div class="view-toggle">
+        <button onclick="setCalendarView('year')" id="view-year">Год</button>
+        <button onclick="setCalendarView('month')" id="view-month" class="active">Месяц</button>
+        <button onclick="setCalendarView('week')" id="view-week">Неделя</button>
+      </div>
     </div>
 
 <!-- swipe indicators removed -->
 
     <div id="view-calendar">
-      <div class="weekdays-header">
-        <div class="weekday-label">Пн</div>
-        <div class="weekday-label">Вт</div>
-        <div class="weekday-label">Ср</div>
-        <div class="weekday-label">Чт</div>
-        <div class="weekday-label">Пт</div>
-        <div class="weekday-label weekend">Сб</div>
-        <div class="weekday-label weekend">Вс</div>
+      <div id="monthView">
+        <div class="weekdays-header">
+          <div class="weekday-label">Пн</div>
+          <div class="weekday-label">Вт</div>
+          <div class="weekday-label">Ср</div>
+          <div class="weekday-label">Чт</div>
+          <div class="weekday-label">Пт</div>
+          <div class="weekday-label weekend">Сб</div>
+          <div class="weekday-label weekend">Вс</div>
+        </div>
+        <div class="calendar-body" id="calendarBody"></div>
       </div>
-      <div class="calendar-body" id="calendarBody"></div>
+      <div class="year-grid" id="yearView" style="display:none;"></div>
+      <div class="week-view" id="weekView" style="display:none;"></div>
     </div>
 
     <div id="view-ideas">
@@ -604,6 +687,8 @@
     let currentFilter = 'all';
     let editingId = null;
     let events = [];
+    let calendarView = 'month'; // 'year', 'month', 'week'
+    let currentWeekStart = new Date();
 
     function isGasReady() {
       return GAS_URL && !GAS_URL.includes('ВСТАВЬТЕ');
@@ -1125,7 +1210,52 @@
       document.head.appendChild(script);
     }
 
+    function setCalendarView(view) {
+      calendarView = view;
+      document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+      document.getElementById('view-' + view).classList.add('active');
+
+      document.getElementById('monthView').style.display = view === 'month' ? 'flex' : 'none';
+      document.getElementById('yearView').style.display = view === 'year' ? 'grid' : 'none';
+      document.getElementById('weekView').style.display = view === 'week' ? 'flex' : 'none';
+
+      renderCalendar();
+    }
+
+    function navPrev() {
+      if (calendarView === 'year') {
+        currentDate.setFullYear(currentDate.getFullYear() - 1);
+      } else if (calendarView === 'month') {
+        prevMonth();
+        return;
+      } else if (calendarView === 'week') {
+        currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+      }
+      renderCalendar();
+    }
+
+    function navNext() {
+      if (calendarView === 'year') {
+        currentDate.setFullYear(currentDate.getFullYear() + 1);
+      } else if (calendarView === 'month') {
+        nextMonth();
+        return;
+      } else if (calendarView === 'week') {
+        currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+      }
+      renderCalendar();
+    }
+
     function renderCalendar() {
+      if (calendarView === 'year') {
+        renderYearView();
+        return;
+      } else if (calendarView === 'week') {
+        renderWeekView();
+        return;
+      }
+
+      // Месячный вид (по умолчанию)
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
       const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь',
@@ -1195,9 +1325,12 @@
             cell.innerHTML = `
               <div class="day-number">${currentDay}</div>
               <div class="day-events">${eventsHtml}</div>
-              <button class="day-add-btn" onclick="event.stopPropagation(); openModalForDate('${dateStr}')">+</button>
+              <div class="day-add-hint">+</div>
             `;
-            cell.onclick = () => openDayPopup(dateStr, dayNum, monthNameCap);
+            cell.onclick = () => {
+              selectedDate = dateStr;
+              openModal();
+            };
           }
 
           weekRow.appendChild(cell);
@@ -1603,10 +1736,148 @@
       openModal();
     }
 
-    function openModalForDate(dateStr) {
-      selectedDate = dateStr;
-      openModal();
+    function renderYearView() {
+      const year = currentDate.getFullYear();
+      document.getElementById('monthTitle').textContent = year + ' год';
+
+      const container = document.getElementById('yearView');
+      container.innerHTML = '';
+
+      const monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+      for (let m = 0; m < 12; m++) {
+        const monthBlock = document.createElement('div');
+        monthBlock.className = 'month-block';
+
+        const title = document.createElement('div');
+        title.className = 'month-block-title';
+        title.textContent = monthNames[m];
+        monthBlock.appendChild(title);
+
+        const weekdays = document.createElement('div');
+        weekdays.className = 'mini-weekdays';
+        ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d => {
+          const span = document.createElement('span');
+          span.textContent = d;
+          weekdays.appendChild(span);
+        });
+        monthBlock.appendChild(weekdays);
+
+        const daysGrid = document.createElement('div');
+        daysGrid.className = 'mini-days';
+
+        const firstDay = new Date(year, m, 1);
+        const lastDay = new Date(year, m + 1, 0);
+        const startDay = (firstDay.getDay() + 6) % 7;
+        const daysInMonth = lastDay.getDate();
+
+        // Пустые ячейки
+        for (let i = 0; i < startDay; i++) {
+          const empty = document.createElement('div');
+          empty.className = 'mini-day other-month';
+          daysGrid.appendChild(empty);
+        }
+
+        // Дни
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dateStr = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+          const dayDiv = document.createElement('div');
+          dayDiv.className = 'mini-day';
+          dayDiv.textContent = d;
+
+          if (dateStr === todayStr) dayDiv.classList.add('today');
+          if (events.some(e => e.date === dateStr)) dayDiv.classList.add('has-event');
+
+          dayDiv.onclick = () => {
+            currentDate = new Date(year, m, d);
+            setCalendarView('month');
+          };
+
+          daysGrid.appendChild(dayDiv);
+        }
+
+        monthBlock.appendChild(daysGrid);
+        container.appendChild(monthBlock);
+      }
     }
+
+    function renderWeekView() {
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+      // Начало недели (понедельник)
+      const weekStart = new Date(currentWeekStart);
+      const dayOfWeek = (weekStart.getDay() + 6) % 7;
+      weekStart.setDate(weekStart.getDate() - dayOfWeek);
+
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+
+      const options = { day: 'numeric', month: 'long' };
+      document.getElementById('monthTitle').textContent = 
+        weekStart.toLocaleDateString('ru-RU', options) + ' – ' + 
+        weekEnd.toLocaleDateString('ru-RU', options);
+
+      const container = document.getElementById('weekView');
+      container.innerHTML = '';
+
+      const dayNames = ['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+
+        const dayCard = document.createElement('div');
+        dayCard.className = 'week-day-card';
+
+        const header = document.createElement('div');
+        header.className = 'week-day-header';
+
+        const name = document.createElement('span');
+        name.className = 'week-day-name';
+        name.textContent = dayNames[i];
+
+        const num = document.createElement('span');
+        num.className = 'week-day-number';
+        num.textContent = date.getDate();
+        if (dateStr === todayStr) num.classList.add('today');
+
+        header.appendChild(name);
+        header.appendChild(num);
+        dayCard.appendChild(header);
+
+        const eventsContainer = document.createElement('div');
+        eventsContainer.className = 'week-day-events';
+
+        const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+
+        if (dayEvents.length === 0) {
+          const empty = document.createElement('div');
+          empty.style.cssText = 'color: #ccc; font-size: 12px; padding: 8px 0;';
+          empty.textContent = 'Нет событий';
+          eventsContainer.appendChild(empty);
+        } else {
+          dayEvents.forEach(ev => {
+            const cat = categories[ev.category] || categories.other;
+            const chip = document.createElement('div');
+            chip.className = `week-event-chip ${cat.class}`;
+            chip.textContent = ev.time ? `${ev.time} ${ev.title}` : ev.title;
+            chip.onclick = (e) => { e.stopPropagation(); openEditModalById(ev.id); };
+            eventsContainer.appendChild(chip);
+          });
+        }
+
+        dayCard.appendChild(eventsContainer);
+        dayCard.onclick = () => openDayPopup(dateStr, date.getDate(), ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][date.getMonth()]);
+
+        container.appendChild(dayCard);
+      }
+    }
+
+    /* openModalForDate removed - now handled by cell.onclick */
 
     function escapeHtml(text) {
       if (!text) return '';
