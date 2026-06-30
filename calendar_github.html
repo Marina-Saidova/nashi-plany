@@ -328,6 +328,20 @@
       font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
+    /* === ФОНЫ ДЛЯ КАТЕГОРИЙ === */
+    .category-bg {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-size: cover; background-position: center;
+      opacity: 0; transition: opacity 0.5s; pointer-events: none; z-index: 0;
+    }
+    .category-bg.show { opacity: 1; }
+    .bg-food { background-image: url('images/food-bg.png'); }
+    .bg-excursions { background-image: url('images/excursions-bg.png'); }
+    .category-bg::after {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255,255,255,0.75);
+    }
+
     /* === СВАЙП МЕЖДУ ВКЛАДКАМИ === */
     .views-container {
       flex: 1; display: flex; overflow: hidden; position: relative;
@@ -395,9 +409,10 @@
 <base target="_blank">
 </head>
 <body>
+  <div class="category-bg" id="catBg"></div>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2273-fix</h1>
+      <h1>📅 Hamster&Fish, v.2274</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1226,6 +1241,15 @@
     function renderIdeas() {
       const list = document.getElementById('ideasList');
       const ideas = events.filter(e => !e.date || e.date === '');
+
+      // Управляем фоном
+      const bg = document.getElementById('catBg');
+      bg.classList.remove('show', 'bg-food', 'bg-excursions');
+      if (currentFilter === 'food') {
+        bg.classList.add('show', 'bg-food');
+      } else if (currentFilter === 'excursions') {
+        bg.classList.add('show', 'bg-excursions');
+      }
 
       if (currentFilter !== 'all') {
         const filtered = ideas.filter(e => e.category === currentFilter);
