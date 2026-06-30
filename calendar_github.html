@@ -401,7 +401,7 @@
   <div class="category-bg" id="catBg"></div>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2286-debug</h1>
+      <h1>📅 Hamster&Fish, v.2287-debug</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1225,6 +1225,13 @@
     function renderIdeas() {
       const list = document.getElementById('ideasList');
       const ideas = events.filter(e => !e.date || e.date === '');
+
+      console.log('=== renderIdeas ===');
+      console.log('Total events:', events.length);
+      console.log('All events:', events.map(e => ({title: e.title, date: e.date, id: e.id})));
+      console.log('Ideas found:', ideas.length);
+      console.log('Ideas:', ideas.map(e => e.title));
+      console.log('Current filter:', currentFilter);
 
       // Фон для категорий
       const bg = document.getElementById('catBg');
