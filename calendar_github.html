@@ -401,7 +401,7 @@
   <div class="category-bg" id="catBg"></div>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.2295</h1>
+      <h1>📅 Hamster&Fish, v.2296</h1>
       <div class="header-actions">
         <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1360,6 +1360,20 @@
       document.getElementById('editActions').style.display = 'flex';
       document.getElementById('newEventButtons').style.display = 'none';
       document.getElementById('btnSave').style.display = 'block';
+
+      // Скрываем лишние кнопки в зависимости от типа события
+      const addToCalendarBtn = document.querySelector('#editActions button[onclick="addToCalendar()"]');
+      const removeToIdeasBtn = document.querySelector('#editActions button[onclick="removeToIdeas()"]');
+
+      if (ev.date && ev.date !== '') {
+        // Событие в календаре — скрываем "В календарь"
+        if (addToCalendarBtn) addToCalendarBtn.style.display = 'none';
+        if (removeToIdeasBtn) removeToIdeasBtn.style.display = 'inline-block';
+      } else {
+        // Событие в идеях — скрываем "Убрать в идеи"
+        if (addToCalendarBtn) addToCalendarBtn.style.display = 'inline-block';
+        if (removeToIdeasBtn) removeToIdeasBtn.style.display = 'none';
+      }
     }
 
     function openEditModalById(id) {
