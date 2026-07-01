@@ -1389,13 +1389,7 @@
   cell.onclick = function() { openModal(dateStr); };  // <-- ДОБАВИТЬ
   
   const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
-            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(currentDay).padStart(2,'0')}`;
-           
-            if (dateStr === todayStr) cell.classList.add('today');
-cell.onclick = function() { openModal(dateStr); };
-            const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
-
-            let eventsHtml = '';
+                    let eventsHtml = '';
             const maxEvents = 3;
             dayEvents.slice(0, maxEvents).forEach(ev => {
               const cat = categories[ev.category] || categories.other;
