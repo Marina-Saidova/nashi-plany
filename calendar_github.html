@@ -439,6 +439,7 @@
     }
     .cat-menu-overlay.show { display: flex; opacity: 1; }
     .cat-menu {
+      cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
       background: white; border-radius: 14px; width: 280px; overflow: hidden;
       box-shadow: 0 10px 40px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.2s;
     }
@@ -706,8 +707,6 @@
         <button class="btn-submit btn-secondary" onclick="addToCalendar()">📅 В календарь</button>
         <button class="btn-submit btn-secondary" onclick="removeToIdeas()">Убрать в идеи</button>
         <button class="btn-submit btn-danger" onclick="deleteEvent()">Удалить</button>
-<button class="btn-submit" style="flex:1; margin-top:0;" onclick="if(event)event.stopPropagation(); saveCatRename()">Сохранить</button>
-        
       </div>
     </div>
   </div>
@@ -743,13 +742,13 @@
 
   <!-- Модалка переименования -->
   <div class="cat-menu-overlay" id="catRenameOverlay">
-    <div class="cat-menu" onclick="event.stopPropagation()">
+    <div class="cat-menu" id="catRenameMenu" style="cursor: pointer;" onclick="void(0)">
       <div class="cat-menu-header">Редактировать категорию</div>
       <input type="text" class="cat-edit-input" id="catRenameInput" placeholder="Название категории">
       <div class="cat-menu-header" style="font-size:13px; padding-top:8px;">Цвет</div>
       <div class="color-picker" id="colorPicker"></div>
       <div style="display: flex; gap: 8px; padding: 0 16px 16px;">
-        <button class="btn-submit" style="flex:1; margin-top:0;" onclick="event.stopPropagation(); saveCatRename()">Сохранить</button>
+        <button class="btn-submit" style="flex:1; margin-top:0;" onclick="alert('Button clicked!'); event.stopPropagation(); saveCatRename()" style="cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;">Сохранить</button>
         <button class="btn-submit btn-secondary" style="flex:1; margin-top:0;" onclick="closeCatRename()">Отмена</button>
       </div>
     </div>
@@ -894,10 +893,12 @@
 
     function editCatName() {
       if (!catMenuKey || !categories[catMenuKey]) return;
-      document.getElementById('catRenameInput').value = categories[catMenuKey].name;
+      // Сохраняем ключ перед закрытием меню
+      const keyToEdit = catMenuKey;
+      document.getElementById('catRenameInput').value = categories[keyToEdit].name;
       renderColorPicker();
       // Выбираем текущий цвет
-      const currentColor = categories[catMenuKey].color || '#999';
+      const currentColor = categories[keyToEdit].color || '#999';
       const colorEl = document.querySelector(`.color-option[data-color="${currentColor}"]`);
       if (colorEl) selectCatColor(colorEl);
       else {
@@ -906,6 +907,8 @@
         if (first) selectCatColor(first);
       }
       closeCatMenu();
+      // Восстанавливаем catMenuKey для редактирования
+      catMenuKey = keyToEdit;
       document.getElementById('catRenameOverlay').classList.add('show');
       setTimeout(() => document.getElementById('catRenameInput').focus(), 100);
     }
@@ -918,23 +921,31 @@
     }
 
     function saveCatRename() {
-      if (!catMenuKey) return;
-      const newName = document.getElementById('catRenameInput').value.trim();
-      if (!newName) { closeCatRename(); return; }
-
+      console.log('STEP 1: saveCatRename started');
+      alert('catMenuKey=' + catMenuKey);
+      if (!catMenuKey) { alert('No catMenuKey - returning'); return; }
+      const renameInput = document.getElementById('catRenameInput');
+      alert('STEP 3: renameInput=' + renameInput);
+      if (!renameInput) { alert('ERROR: catRenameInput not found!'); return; }
+      const newName = renameInput.value.trim();
+      alert('STEP 4: newName=' + newName);
+      if (!newName) { alert('Name is empty - closing'); closeCatRename(); return; }
       // Проверяем, нет ли уже категории с таким именем
+      alert('STEP 5a: About to call findCategoryKeyByName with newName=' + newName);
       const existingKey = findCategoryKeyByName(newName);
+      alert('STEP 5b: existingKey=' + existingKey + ', catMenuKey=' + catMenuKey);
       if (existingKey && existingKey !== catMenuKey) {
+        alert('STEP 5c: Category already exists! existingKey=' + existingKey + ' !== catMenuKey=' + catMenuKey);
         alert('Категория «' + newName + '» уже существует');
         return;
       }
 
       const oldName = categories[catMenuKey].name;
       const oldColor = categories[catMenuKey].color;
+      alert('STEP 7: oldName=' + oldName + ', oldColor=' + oldColor);
       categories[catMenuKey].name = newName;
       categories[catMenuKey].color = selectedCatColor;
       categories[catMenuKey].bg = selectedCatColor + '20'; // 20 = 12% opacity
-
       // Обновляем UI фильтров
       const filterChip = document.querySelector(`.filter-chip[data-filter="${catMenuKey}"]`);
       if (filterChip) {
@@ -2118,6 +2129,12 @@
     document.getElementById('modal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeModal();
     });
+
+    // Event listener for cat-menu to stop propagation
+    document.getElementById('catRenameMenu').addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+
     // Close catRenameOverlay when clicking outside
     document.getElementById('catRenameOverlay').addEventListener('click', function(e) {
       if (e.target === e.currentTarget) closeCatRename();
