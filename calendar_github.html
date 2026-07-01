@@ -740,14 +740,14 @@
   </div>
 
   <!-- Модалка переименования -->
-  <div class="cat-menu-overlay" id="catRenameOverlay" onclick="closeCatRename(event)">
+  <div class="cat-menu-overlay" id="catRenameOverlay">
     <div class="cat-menu" onclick="event.stopPropagation()">
       <div class="cat-menu-header">Редактировать категорию</div>
       <input type="text" class="cat-edit-input" id="catRenameInput" placeholder="Название категории">
       <div class="cat-menu-header" style="font-size:13px; padding-top:8px;">Цвет</div>
       <div class="color-picker" id="colorPicker"></div>
       <div style="display: flex; gap: 8px; padding: 0 16px 16px;">
-        <button class="btn-submit" style="flex:1; margin-top:0;" onclick="saveCatRename()">Сохранить</button>
+        <button class="btn-submit" style="flex:1; margin-top:0;" onclick="event.stopPropagation(); saveCatRename()">Сохранить</button>
         <button class="btn-submit btn-secondary" style="flex:1; margin-top:0;" onclick="closeCatRename()">Отмена</button>
       </div>
     </div>
@@ -2116,6 +2116,11 @@
     document.getElementById('modal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeModal();
     });
+    // Close catRenameOverlay when clicking outside
+    document.getElementById('catRenameOverlay').addEventListener('click', function(e) {
+      if (e.target === e.currentTarget) closeCatRename();
+    });
+
     document.getElementById('dayPopup').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeDayPopup();
     });
