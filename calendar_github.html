@@ -783,6 +783,32 @@
     };
 
     let categories = { ...baseCategories };
+
+    // Save categories to localStorage
+    function saveCategoriesToLocalStorage() {
+      localStorage.setItem('calendar_categories', JSON.stringify(categories));
+    }
+
+    // Load categories from localStorage
+    function loadCategoriesFromLocalStorage() {
+      const saved = localStorage.getItem('calendar_categories');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          // Merge with base categories, keeping custom ones
+          Object.keys(parsed).forEach(key => {
+            if (parsed[key] && parsed[key].color) {
+              categories[key] = parsed[key];
+            }
+          });
+          return true;
+        } catch (e) {
+          console.error('Error loading categories from localStorage:', e);
+        }
+      }
+      return false;
+    }
+
     let currentDate = new Date();
     let selectedCategory = 'excursions';
     let selectedAuthor = 'Я';
@@ -830,6 +856,7 @@
         color: catColor, 
         bg: catColor + '20' 
       };
+      saveCategoriesToLocalStorage();
 
       const div = document.createElement('div');
       div.className = 'cat-option cat-custom';
@@ -955,6 +982,7 @@
       categories[catMenuKey].name = newName;
       categories[catMenuKey].color = selectedCatColor;
       categories[catMenuKey].bg = selectedCatColor + '20'; // 20 = 12% opacity
+      saveCategoriesToLocalStorage();
       // Обновляем UI фильтров
       const filterChip = document.querySelector(`.filter-chip[data-filter="${catMenuKey}"]`);
       if (filterChip) {
