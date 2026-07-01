@@ -783,6 +783,38 @@
     };
 
     let categories = { ...baseCategories };
+    // Save categories to cookies
+    function saveCategoriesToCookie() {
+      try {
+        const json = JSON.stringify(categories);
+        const encoded = btoa(encodeURIComponent(json));
+        document.cookie = 'calendar_categories=' + encoded + '; path=/; max-age=31536000';
+        console.log('Categories saved to cookie');
+      } catch (e) {
+        console.error('Error saving categories to cookie:', e);
+      }
+    }
+
+    // Load categories from cookies
+    function loadCategoriesFromCookie() {
+      try {
+        const match = document.cookie.match(/calendar_categories=([^;]+)/);
+        if (match) {
+          const decoded = decodeURIComponent(atob(match[1]));
+          const parsed = JSON.parse(decoded);
+          console.log('Categories loaded from cookie:', Object.keys(parsed));
+          Object.keys(parsed).forEach(key => {
+            if (parsed[key] && parsed[key].color) {
+              categories[key] = parsed[key];
+            }
+          });
+          return true;
+        }
+      } catch (e) {
+        console.error('Error loading categories from cookie:', e);
+      }
+      return false;
+    }
     let currentDate = new Date();
     let selectedCategory = 'excursions';
     let selectedAuthor = 'Я';
@@ -1487,7 +1519,7 @@
       const headerAddBtn = document.getElementById('headerAddBtn');
       const viewBar = document.getElementById('viewBar');
 
-      sessionStorage.setItem('lastView', view);
+      localStorage.setItem('lastView', view);
 
       if (view === 'calendar') {
         calendarView.classList.remove('hidden');
@@ -1604,7 +1636,7 @@
       document.getElementById('inputDesc').value = '';
       selectCategory(document.querySelector('.cat-option[data-cat="excursions"]'));
 
-      const savedAuthor = sessionStorage.getItem('lastAuthor');
+      const savedAuthor = localStorage.getItem('lastAuthor');
       if (savedAuthor) {
         const el = document.querySelector(`.author-option[data-author="${savedAuthor}"]`);
         if (el) selectAuthor(el);
@@ -1745,7 +1777,7 @@
         scheduleReminder(newEvent);
       }
 
-      sessionStorage.setItem('lastAuthor', selectedAuthor);
+      localStorage.setItem('lastAuthor', selectedAuthor);
 
       closeModal();
       renderCalendar();
@@ -2138,7 +2170,7 @@
       if (isGasReady()) loadFromSheet();
       initSwipe();
 
-      const savedView = sessionStorage.getItem('lastView');
+      const savedView = localStorage.getItem('lastView');
       if (savedView === 'ideas') {
         switchView('ideas');
       }
@@ -2176,15 +2208,15 @@
         Notification.requestPermission();
       }
       
-      // Сохраняем в sessionStorage для персистентности
-      const reminders = JSON.parse(sessionStorage.getItem('reminders') || '[]');
+      // Сохраняем в localStorage для персистентности
+      const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
       reminders.push({
         id: ev.id,
         title: ev.title,
         time: notifyTime,
         fired: false
       });
-      sessionStorage.setItem('reminders', JSON.stringify(reminders));
+      localStorage.setItem('reminders', JSON.stringify(reminders));
       
       // Устанавливаем таймер (работает пока страница открыта)
       const delay = notifyTime - now;
@@ -2214,14 +2246,14 @@
     }
 
     function markReminderFired(id) {
-      const reminders = JSON.parse(sessionStorage.getItem('reminders') || '[]');
+      const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
       const r = reminders.find(x => x.id === id);
       if (r) r.fired = true;
-      sessionStorage.setItem('reminders', JSON.stringify(reminders));
+      localStorage.setItem('reminders', JSON.stringify(reminders));
     }
 
     function checkPendingReminders() {
-      const reminders = JSON.parse(sessionStorage.getItem('reminders') || '[]');
+      const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
       const now = Date.now();
       reminders.forEach(r => {
         if (!r.fired && r.time <= now) {
