@@ -783,32 +783,6 @@
     };
 
     let categories = { ...baseCategories };
-
-    // Save categories to localStorage
-    function saveCategoriesToLocalStorage() {
-      localStorage.setItem('calendar_categories', JSON.stringify(categories));
-    }
-
-    // Load categories from localStorage
-    function loadCategoriesFromLocalStorage() {
-      const saved = localStorage.getItem('calendar_categories');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          // Merge with base categories, keeping custom ones
-          Object.keys(parsed).forEach(key => {
-            if (parsed[key] && parsed[key].color) {
-              categories[key] = parsed[key];
-            }
-          });
-          return true;
-        } catch (e) {
-          console.error('Error loading categories from localStorage:', e);
-        }
-      }
-      return false;
-    }
-
     let currentDate = new Date();
     let selectedCategory = 'excursions';
     let selectedAuthor = 'Я';
@@ -856,7 +830,6 @@
         color: catColor, 
         bg: catColor + '20' 
       };
-      saveCategoriesToLocalStorage();
 
       const div = document.createElement('div');
       div.className = 'cat-option cat-custom';
@@ -982,7 +955,6 @@
       categories[catMenuKey].name = newName;
       categories[catMenuKey].color = selectedCatColor;
       categories[catMenuKey].bg = selectedCatColor + '20'; // 20 = 12% opacity
-      saveCategoriesToLocalStorage();
       // Обновляем UI фильтров
       const filterChip = document.querySelector(`.filter-chip[data-filter="${catMenuKey}"]`);
       if (filterChip) {
@@ -1515,7 +1487,7 @@
       const headerAddBtn = document.getElementById('headerAddBtn');
       const viewBar = document.getElementById('viewBar');
 
-      localStorage.setItem('lastView', view);
+      sessionStorage.setItem('lastView', view);
 
       if (view === 'calendar') {
         calendarView.classList.remove('hidden');
@@ -1632,7 +1604,7 @@
       document.getElementById('inputDesc').value = '';
       selectCategory(document.querySelector('.cat-option[data-cat="excursions"]'));
 
-      const savedAuthor = localStorage.getItem('lastAuthor');
+      const savedAuthor = sessionStorage.getItem('lastAuthor');
       if (savedAuthor) {
         const el = document.querySelector(`.author-option[data-author="${savedAuthor}"]`);
         if (el) selectAuthor(el);
@@ -1773,7 +1745,7 @@
         scheduleReminder(newEvent);
       }
 
-      localStorage.setItem('lastAuthor', selectedAuthor);
+      sessionStorage.setItem('lastAuthor', selectedAuthor);
 
       closeModal();
       renderCalendar();
@@ -2166,7 +2138,7 @@
       if (isGasReady()) loadFromSheet();
       initSwipe();
 
-      const savedView = localStorage.getItem('lastView');
+      const savedView = sessionStorage.getItem('lastView');
       if (savedView === 'ideas') {
         switchView('ideas');
       }
@@ -2204,15 +2176,15 @@
         Notification.requestPermission();
       }
       
-      // Сохраняем в localStorage для персистентности
-      const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+      // Сохраняем в sessionStorage для персистентности
+      const reminders = JSON.parse(sessionStorage.getItem('reminders') || '[]');
       reminders.push({
         id: ev.id,
         title: ev.title,
         time: notifyTime,
         fired: false
       });
-      localStorage.setItem('reminders', JSON.stringify(reminders));
+      sessionStorage.setItem('reminders', JSON.stringify(reminders));
       
       // Устанавливаем таймер (работает пока страница открыта)
       const delay = notifyTime - now;
@@ -2242,14 +2214,14 @@
     }
 
     function markReminderFired(id) {
-      const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+      const reminders = JSON.parse(sessionStorage.getItem('reminders') || '[]');
       const r = reminders.find(x => x.id === id);
       if (r) r.fired = true;
-      localStorage.setItem('reminders', JSON.stringify(reminders));
+      sessionStorage.setItem('reminders', JSON.stringify(reminders));
     }
 
     function checkPendingReminders() {
-      const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+      const reminders = JSON.parse(sessionStorage.getItem('reminders') || '[]');
       const now = Date.now();
       reminders.forEach(r => {
         if (!r.fired && r.time <= now) {
