@@ -560,7 +560,7 @@
     <div class="header">
       <div style="width: 40px;"></div>
       <div class="header-actions">
-        <button class="btn-add" onclick="openModal()" id="headerAddBtn" style="display: none;">+ Добавить</button>
+        <button class="btn-add" onclick="openModal()" id="headerAddBtn">+ Добавить</button>
       </div>
     </div>
 
@@ -832,6 +832,7 @@
         });
         filterDiv.addEventListener('touchend', function() { clearTimeout(pressTimer); });
         filterDiv.addEventListener('touchmove', function() { clearTimeout(pressTimer); });
+       cell.addEventListener('click', function() { openModal(dateStr); });
       }
       document.getElementById('ideasFilter').appendChild(filterDiv);
     }
@@ -1380,11 +1381,18 @@
             } else {
               displayDay = currentDay - daysInMonth;
             }
-            cell.innerHTML = `<div class="day-number">${displayDay}</div>`;
+            cell.innerHTML = `<div class="day-number">${currentDay}</div><div class="day-add-hint">+</div>`;
           } else {
+           const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(currentDay).padStart(2,'0')}`;
+  if (dateStr === todayStr) cell.classList.add('today');
+  
+  cell.onclick = function() { openModal(dateStr); };  // <-- ДОБАВИТЬ
+  
+  const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
             const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(currentDay).padStart(2,'0')}`;
+           
             if (dateStr === todayStr) cell.classList.add('today');
-
+cell.onclick = function() { openModal(dateStr); };
             const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
 
             let eventsHtml = '';
