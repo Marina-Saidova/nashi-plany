@@ -1376,8 +1376,17 @@
       const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
       const totalCells = startDayOfWeek + daysInMonth;
       const numWeeks = Math.ceil(totalCells / 7);
+      // Ensure we always show exactly 6 weeks (42 days) for consistency
+      // or calculate proper number of weeks to avoid extra days
 
-      for (let week = 0; week < numWeeks; week++) {
+      // Calculate how many weeks are needed to show the complete month
+      // including days from next month to fill the last week
+      const lastDayOfWeek = (startDayOfWeek + daysInMonth) % 7;
+      const daysFromNextMonth = lastDayOfWeek === 0 ? 0 : 7 - lastDayOfWeek;
+      const totalDaysToShow = startDayOfWeek + daysInMonth + daysFromNextMonth;
+      const totalWeeks = Math.ceil(totalDaysToShow / 7);
+
+      for (let week = 0; week < totalWeeks; week++) {
         const weekRow = document.createElement('div');
         weekRow.className = 'week-row';
 
@@ -1395,7 +1404,7 @@
             } else {
               displayDay = currentDay - daysInMonth;
             }
-            cell.innerHTML = `<div class="day-number">${currentDay}</div><div class="day-add-hint">+</div>`;
+            cell.innerHTML = `<div class="day-number">${displayDay}</div><div class="day-add-hint">+</div>`;
           } else {
            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(currentDay).padStart(2,'0')}`;
   if (dateStr === todayStr) cell.classList.add('today');
