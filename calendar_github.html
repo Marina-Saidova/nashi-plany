@@ -1140,15 +1140,17 @@
       cats.forEach(function(c) {
         var key = c['Ключ'] || c['key'];
         var name = c['Название'] || c['name'];
+        var color = c['Цвет'] || c['color'];
         if (!key || !name) return;
         // Если такой ключ уже есть — обновляем имя
         if (categories[key]) {
           categories[key].name = name;
+          if (color) { categories[key].color = color; categories[key].bg = color + '20'; }
           return;
         }
         // Если такое имя уже есть у другой категории — не создаём дубль
         if (findCategoryKeyByName(name)) return;
-        addCategoryToUI(key, name);
+       addCategoryToUI(key, name, color)
       });
     }
 
