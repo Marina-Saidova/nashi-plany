@@ -656,17 +656,22 @@
           <button type="button" class="btn-submit" style="margin-top: 8px;" onclick="addCustomCategory()">Добавить</button>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Дата</label>
-        <input type="date" class="form-input" id="inputDate">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Время начала</label>
-        <input type="time" class="form-input" id="inputTime">
-      </div>
-      <div class="form-group">
+     <div class="form-group">
         <label class="form-label">Время окончания</label>
         <input type="time" class="form-input" id="inputTimeEnd">
+      </div>
+      <div class="form-group">
+        <label class="form-label">⏰ Напомнить</label>
+        <select class="form-input" id="inputReminder" style="cursor:pointer;">
+          <option value="">Не напоминать</option>
+          <option value="0">В момент события</option>
+          <option value="5">За 5 минут</option>
+          <option value="15">За 15 минут</option>
+          <option value="30">За 30 минут</option>
+          <option value="60">За 1 час</option>
+          <option value="120">За 2 часа</option>
+          <option value="1440">За 1 день</option>
+        </select>
       </div>
       <div class="form-group">
         <label class="form-label">Место</label>
@@ -1584,6 +1589,7 @@
       document.getElementById('inputTimeEnd').value = ev.timeEnd || '';
       document.getElementById('inputPlace').value = ev.place || '';
       document.getElementById('inputDesc').value = ev.desc || '';
+      document.getElementById('inputReminder').value = ev.reminder || '';
 
       const catEl = document.querySelector(`.cat-option[data-cat="${ev.category}"]`) || document.querySelector('.cat-option[data-cat="other"]');
       selectCategory(catEl);
@@ -1650,6 +1656,7 @@
       const timeEnd = document.getElementById('inputTimeEnd').value;
       const place = document.getElementById('inputPlace').value.trim();
       const desc = document.getElementById('inputDesc').value.trim();
+      const reminder = document.getElementById('inputReminder').value;
 
       if (!title) {
         alert('Введите название');
@@ -1677,19 +1684,24 @@
           ev.place = place;
           ev.author = selectedAuthor;
           ev.category = selectedCategory;
-          ev.desc = desc;
+           ev.desc = desc;
+          ev.reminder = reminder;
           saveToServer(ev);
+          scheduleReminder(ev);
         }
+     
       } else {
         const newEvent = {
           id: Date.now(),
           title, date, time, timeEnd, place,
           author: selectedAuthor,
           category: selectedCategory,
-          desc
+              desc,
+          reminder
         };
         events.push(newEvent);
         saveToServer(newEvent);
+        scheduleReminder(newEvent);
       }
 
       localStorage.setItem('lastAuthor', selectedAuthor);
@@ -1737,6 +1749,7 @@
       if (!ev) return;
 
       const date = document.getElementById('inputDate').value;
+      document.getElementById('inputReminder').value = ev.reminder || '';
       if (!date) {
         alert('Сначала выберите дату');
         return;
@@ -1745,6 +1758,7 @@
       const time = document.getElementById('inputTime').value;
       const timeEnd = document.getElementById('inputTimeEnd').value;
       const place = document.getElementById('inputPlace').value.trim();
+      
 
       // Создаём копию в календаре
       const calendarEvent = {
@@ -2095,6 +2109,80 @@
     document.getElementById('dayPopup').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeDayPopup();
     });
+    // === НАПОМИНАЛКИ ===
+    function scheduleReminder(ev) {
+      if (!ev.reminder || !ev.date) return;
+      const eventTime = new Date(ev.date + (ev.time ? 'T' + ev.time : 'T00:00'));
+      const reminderMs = parseInt(ev.reminder) * 60 * 1000;
+      const notifyTime = eventTime.getTime() - reminderMs;
+      const now = Date.now();
+      
+      if (notifyTime <= now) return; // Уже прошло
+      
+      // Запрашиваем разрешение если нужно
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+      
+      // Сохраняем в localStorage для персистентности
+      const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+      reminders.push({
+        id: ev.id,
+        title: ev.title,
+        time: notifyTime,
+        fired: false
+      });
+      localStorage.setItem('reminders', JSON.stringify(reminders));
+      
+      // Устанавливаем таймер (работает пока страница открыта)
+      const delay = notifyTime - now;
+      setTimeout(() => {
+        showReminderNotification(ev);
+      }, Math.min(delay, 2147483647)); // MAX_INT for setTimeout
+    }
+
+    function showReminderNotification(ev) {
+      const reminderText = ev.reminder === '0' ? 'Сейчас!' : 'Через ' + ev.reminder + ' мин.';
+      const body = ev.time ? ev.time + ' — ' + ev.title : ev.title;
+      
+      // Пробуем Web Notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('📅 ' + reminderText, {
+          body: body,
+          icon: 'https://cdn-icons-png.flaticon.com/512/3652/3652191.png',
+          tag: 'reminder_' + ev.id
+        });
+      } else {
+        // Fallback — alert (для мобильных Safari без разрешения)
+        alert('🔔 ' + reminderText + '\\n' + body);
+      }
+      
+      // Помечаем как отправленное
+      markReminderFired(ev.id);
+    }
+
+    function markReminderFired(id) {
+      const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+      const r = reminders.find(x => x.id === id);
+      if (r) r.fired = true;
+      localStorage.setItem('reminders', JSON.stringify(reminders));
+    }
+
+    function checkPendingReminders() {
+      const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+      const now = Date.now();
+      reminders.forEach(r => {
+        if (!r.fired && r.time <= now) {
+          const ev = events.find(e => e.id === r.id);
+          if (ev) showReminderNotification(ev);
+          else markReminderFired(r.id);
+        }
+      });
+    }
+
+    // Проверяем напоминания при загрузке и каждую минуту
+    setInterval(checkPendingReminders, 60000);
+    document.addEventListener('DOMContentLoaded', checkPendingReminders);
   </script>
 </body>
 </html>
