@@ -546,7 +546,22 @@
       #view-ideas { display: none !important; }
       #view-ideas.active { display: flex !important; }
     }
-  </style>
+  
+    #inputCustomCategoryColor {
+      -webkit-appearance: none;
+      border: none;
+    }
+    #inputCustomCategoryColor::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+    #inputCustomCategoryColor::-webkit-color-swatch {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    .cat-custom {
+      border-left: 4px solid transparent;
+    }
+</style>
 <base target="_blank">
 </head>
 <body>
@@ -647,6 +662,10 @@
         <button type="button" class="add-category-btn" onclick="showCustomCategory()">+ Добавить свою категорию</button>
         <div class="custom-category-input" id="customCategoryInput">
           <input type="text" class="form-input" id="inputCustomCategory" placeholder="Например: Дни рождения">
+          <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+            <label style="font-size:12px; color:#666;">Цвет:</label>
+            <input type="color" id="inputCustomCategoryColor" value="#999999" style="width:42px; height:32px; border:none; border-radius:6px; cursor:pointer; padding:0; background:none;">
+          </div>
           <button type="button" class="btn-submit" style="margin-top: 8px;" onclick="addCustomCategory()">Добавить</button>
         </div>
       </div>
@@ -773,40 +792,48 @@
     function addCustomCategory() {
       const name = document.getElementById('inputCustomCategory').value.trim();
       if (!name) return;
+      const color = document.getElementById('inputCustomCategoryColor').value;
       const key = 'custom_' + Date.now();
-      saveCategoryToServer(key, name);
-      addCategoryToUI(key, name);
+      saveCategoryToServer(key, name, color);
+      addCategoryToUI(key, name, color);
       selectCategory(document.querySelector(`[data-cat="${key}"]`));
       document.getElementById('customCategoryInput').style.display = 'none';
       document.getElementById('inputCustomCategory').value = '';
+      document.getElementById('inputCustomCategoryColor').value = '#999999';
     }
 
     function addCategoryToUI(key, name, color) {
       if (categories[key]) return;
-      // Проверяем, нет ли уже категории с таким именем
       if (findCategoryKeyByName(name)) return;
-      const catColor = color || '#999';
+      const catColor = color || '#999999';
       categories[key] = { 
         name: name, 
         class: 'cat-custom', 
         color: catColor, 
         bg: catColor + '20' 
       };
+
       const div = document.createElement('div');
       div.className = 'cat-option cat-custom';
       div.dataset.cat = key;
       div.onclick = function() { selectCategory(this); };
       div.textContent = '✨ ' + name;
+      div.style.backgroundColor = catColor + '20';
+      div.style.color = catColor;
+      div.style.borderLeft = '4px solid ' + catColor;
       document.getElementById('categoryOptions').appendChild(div);
+
       const filterDiv = document.createElement('div');
       filterDiv.className = 'filter-chip';
       filterDiv.onclick = function() { filterIdeas(key); };
       filterDiv.dataset.filter = key;
       filterDiv.textContent = name;
-      // Добавляем контекстное меню только для кастомных категорий
+      filterDiv.style.backgroundColor = catColor + '20';
+      filterDiv.style.color = catColor;
+      filterDiv.style.borderColor = catColor + '60';
+
       if (key.startsWith('custom_') || key.startsWith('temp_')) {
         filterDiv.oncontextmenu = function(e) { showCatMenu(e, key); return false; };
-        // Для мобильных — долгий тап
         let pressTimer;
         filterDiv.addEventListener('touchstart', function(e) {
           pressTimer = setTimeout(function() { showCatMenu(e, key); }, 600);
@@ -1013,7 +1040,7 @@
       document.head.appendChild(script);
     }
 
-    function saveCategoryToServer(key, name) {
+    function saveCategoryToServer(key, name, color) {
       if (!isGasReady()) return;
       const callbackName = 'cat_cb_' + Date.now();
       window[callbackName] = function(data) {
@@ -1026,6 +1053,7 @@
       params.push('callback=' + encodeURIComponent(callbackName));
       params.push('key=' + encodeURIComponent(key));
       params.push('name=' + encodeURIComponent(name));
+      params.push('color=' + encodeURIComponent(color || '#999999'));
       script.src = GAS_URL + '?' + params.join('&');
       document.head.appendChild(script);
     }
@@ -2021,56 +2049,46 @@
     const SWIPE_THRESHOLD = 60;
 
     function initSwipe() {
-      const container = document.getElementById('app');
-      const swipeLeft = document.getElementById('swipeLeft');
-      const swipeRight = document.getElementById('swipeRight');
-      const ideasList = document.getElementById('ideasList');
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchEndX = 0;
+      let isSwiping = false;
+      const SWIPE_THRESHOLD = 50;
+      const MAX_VERTICAL_DRIFT = 80;
 
-      container.addEventListener('touchstart', function(e) {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
+      const calendarView = document.getElementById('view-calendar');
+
+      calendarView.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+        isSwiping = true;
+      }, { passive: true });
+
+      calendarView.addEventListener('touchmove', function(e) {
+        if (!isSwiping) return;
+      }, { passive: true });
+
+      calendarView.addEventListener('touchend', function(e) {
+        if (!isSwiping) return;
         isSwiping = false;
-      }, {passive: true});
 
-      container.addEventListener('touchmove', function(e) {
-        if (!touchStartX) return;
-        const diffX = e.touches[0].clientX - touchStartX;
-        const diffY = e.touches[0].clientY - touchStartY;
+        touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
 
-        // Проверяем, что это горизонтальный свайп
-        if (Math.abs(diffX) > Math.abs(diffY) + 10) {
-          isSwiping = true;
-          if (diffX > 30) {
-            swipeRight.classList.add('show');
-            swipeLeft.classList.remove('show');
-          } else if (diffX < -30) {
-            swipeLeft.classList.add('show');
-            swipeRight.classList.remove('show');
-          }
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+
+        if (Math.abs(deltaY) > MAX_VERTICAL_DRIFT) return;
+        if (Math.abs(deltaX) < SWIPE_THRESHOLD) return;
+
+        if (currentView !== 'calendar') return;
+
+        if (deltaX < 0) {
+          nextMonth();
+        } else {
+          prevMonth();
         }
-      }, {passive: true});
-
-      container.addEventListener('touchend', function(e) {
-        swipeLeft.classList.remove('show');
-        swipeRight.classList.remove('show');
-
-        if (!isSwiping) { touchStartX = 0; return; }
-
-        const diffX = e.changedTouches[0].clientX - touchStartX;
-        const currentView = document.getElementById('view-ideas').classList.contains('active') ? 'ideas' : 'calendar';
-
-        if (diffX < -SWIPE_THRESHOLD && currentView === 'calendar') {
-          // Свайп влево — на идеи
-          switchView('ideas');
-        } else if (diffX > SWIPE_THRESHOLD && currentView === 'ideas') {
-          // Свайп вправо — на календарь
-          switchView('calendar');
-        }
-
-        touchStartX = 0;
-        isSwiping = false;
-      });
-
+      }, { passive: true });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
