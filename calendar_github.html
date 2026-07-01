@@ -783,38 +783,6 @@
     };
 
     let categories = { ...baseCategories };
-    // Save categories to cookies
-    function saveCategoriesToCookie() {
-      try {
-        const json = JSON.stringify(categories);
-        const encoded = btoa(encodeURIComponent(json));
-        document.cookie = 'calendar_categories=' + encoded + '; path=/; max-age=31536000';
-        console.log('Categories saved to cookie');
-      } catch (e) {
-        console.error('Error saving categories to cookie:', e);
-      }
-    }
-
-    // Load categories from cookies
-    function loadCategoriesFromCookie() {
-      try {
-        const match = document.cookie.match(/calendar_categories=([^;]+)/);
-        if (match) {
-          const decoded = decodeURIComponent(atob(match[1]));
-          const parsed = JSON.parse(decoded);
-          console.log('Categories loaded from cookie:', Object.keys(parsed));
-          Object.keys(parsed).forEach(key => {
-            if (parsed[key] && parsed[key].color) {
-              categories[key] = parsed[key];
-            }
-          });
-          return true;
-        }
-      } catch (e) {
-        console.error('Error loading categories from cookie:', e);
-      }
-      return false;
-    }
     let currentDate = new Date();
     let selectedCategory = 'excursions';
     let selectedAuthor = 'Я';
@@ -1140,17 +1108,15 @@
       cats.forEach(function(c) {
         var key = c['Ключ'] || c['key'];
         var name = c['Название'] || c['name'];
-        var color = c['Цвет'] || c['color'];
         if (!key || !name) return;
         // Если такой ключ уже есть — обновляем имя
         if (categories[key]) {
           categories[key].name = name;
-          if (color) { categories[key].color = color; categories[key].bg = color + '20'; }
           return;
         }
         // Если такое имя уже есть у другой категории — не создаём дубль
         if (findCategoryKeyByName(name)) return;
-       addCategoryToUI(key, name, color)
+        addCategoryToUI(key, name);
       });
     }
 
